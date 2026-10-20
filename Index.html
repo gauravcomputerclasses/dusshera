@@ -1,0 +1,2669 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>DUSSEHRA — THE FINAL ARROW</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Cinzel Decorative, Cinzel, Rajdhani -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Cinzel:wght@500;600;700;800&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+    <!-- Three.js r128 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+    <style>
+        :root {
+            --gold-bright: #ffd700;
+            --gold-warm: #f59e0b;
+            --gold-bronze: #b45309;
+            --crimson-deep: #7f1d1d;
+            --midnight: #050814;
+            --saffron: #ff6b00;
+        }
+
+        * {
+            user-select: none;
+            -webkit-user-select: none;
+            box-sizing: border-box;
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #03050c;
+            font-family: 'Rajdhani', sans-serif;
+            color: #fef3c7;
+            touch-action: none;
+        }
+
+        .font-cinzel {
+            font-family: 'Cinzel', serif;
+        }
+
+        .font-title {
+            font-family: 'Cinzel Decorative', serif;
+        }
+
+        #canvas-container {
+            position: fixed;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Ornate Royal Indian Frames */
+        .royal-panel {
+            background: rgba(8, 11, 24, 0.88);
+            border: 1px solid rgba(245, 158, 11, 0.45);
+            box-shadow: 0 0 35px rgba(0, 0, 0, 0.9), inset 0 0 25px rgba(245, 158, 11, 0.08);
+            backdrop-filter: blur(10px);
+            position: relative;
+        }
+
+        .royal-panel::before,
+        .royal-panel::after {
+            content: '';
+            position: absolute;
+            width: 14px;
+            height: 14px;
+            border-color: #fbbf24;
+            pointer-events: none;
+        }
+
+        .royal-panel::before {
+            top: -2px;
+            left: -2px;
+            border-top: 3px solid #fbbf24;
+            border-left: 3px solid #fbbf24;
+        }
+
+        .royal-panel::after {
+            bottom: -2px;
+            right: -2px;
+            border-bottom: 3px solid #fbbf24;
+            border-right: 3px solid #fbbf24;
+        }
+
+        .royal-btn {
+            background: rgba(120, 30, 15, 0.85);
+            border: 1px solid #f59e0b;
+            color: #fef3c7;
+            font-family: 'Cinzel', serif;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: 0 4px 18px rgba(0, 0, 0, 0.6), inset 0 0 12px rgba(251, 191, 36, 0.2);
+            cursor: pointer;
+        }
+
+        .royal-btn:hover {
+            background: rgba(180, 50, 15, 0.95);
+            border-color: #fde68a;
+            color: #ffffff;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(245, 158, 11, 0.45), inset 0 0 18px rgba(251, 191, 36, 0.35);
+        }
+
+        .royal-btn:active {
+            transform: translateY(0px);
+        }
+
+        .royal-btn-secondary {
+            background: rgba(15, 23, 42, 0.85);
+            border: 1px solid rgba(245, 158, 11, 0.4);
+            color: #fde68a;
+            font-family: 'Cinzel', serif;
+            letter-spacing: 0.08em;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        .royal-btn-secondary:hover,
+        .royal-btn-secondary.active-opt {
+            background: rgba(146, 64, 14, 0.85);
+            border-color: #fbbf24;
+            color: #ffffff;
+            box-shadow: 0 0 15px rgba(245, 158, 11, 0.35);
+        }
+
+        /* Head Tracker Icons */
+        .head-badge {
+            width: 30px;
+            height: 34px;
+            border: 1px solid rgba(251, 191, 36, 0.5);
+            background: rgba(15, 23, 42, 0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            transition: all 0.35s ease;
+            border-radius: 4px;
+        }
+
+        .head-badge.ignited {
+            background: rgba(185, 28, 28, 0.9);
+            border-color: #ff6b00;
+            box-shadow: 0 0 14px rgba(255, 107, 0, 0.85);
+            transform: scale(1.08);
+        }
+
+        /* Floating 3D-to-2D Markers */
+        .target-marker {
+            position: absolute;
+            width: 36px;
+            height: 36px;
+            margin-left: -18px;
+            margin-top: -18px;
+            pointer-events: none;
+            transition: transform 0.1s ease-out, opacity 0.2s ease;
+            z-index: 15;
+        }
+
+        @keyframes pulseRing {
+            0% { transform: scale(0.85) rotate(0deg); opacity: 0.95; }
+            50% { transform: scale(1.18) rotate(45deg); opacity: 0.6; }
+            100% { transform: scale(0.85) rotate(90deg); opacity: 0.95; }
+        }
+
+        .marker-diamond {
+            width: 100%;
+            height: 100%;
+            border: 2px solid #fbbf24;
+            box-shadow: 0 0 12px rgba(251, 191, 36, 0.8), inset 0 0 8px rgba(255, 107, 0, 0.5);
+            animation: pulseRing 2.4s infinite linear;
+        }
+
+        .marker-core .marker-diamond {
+            border-color: #ef4444;
+            box-shadow: 0 0 20px rgba(239, 68, 68, 0.95), inset 0 0 12px rgba(251, 191, 36, 0.9);
+        }
+
+        /* Floating Hit Popups */
+        @keyframes floatUpFade {
+            0% { opacity: 1; transform: translateY(0) scale(0.9); }
+            25% { opacity: 1; transform: translateY(-14px) scale(1.08); }
+            100% { opacity: 0; transform: translateY(-48px) scale(0.95); }
+        }
+
+        .hit-popup {
+            position: absolute;
+            pointer-events: none;
+            font-family: 'Cinzel', serif;
+            font-weight: 800;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.95), 0 0 15px rgba(255, 107, 0, 0.85);
+            animation: floatUpFade 1.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            z-index: 30;
+        }
+
+        /* Vignette & Screen Flash */
+        #cinematic-vignette {
+            background: radial-gradient(circle at center, transparent 55%, rgba(2, 4, 12, 0.85) 100%);
+            pointer-events: none;
+        }
+
+        /* Custom Scrollbar for How to Play modal */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #090d16;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #b45309;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 3D WebGL Canvas Container -->
+    <div id="canvas-container"></div>
+
+    <!-- Ambient Cinematic Vignette & Flash Overlay -->
+    <div id="cinematic-vignette" class="fixed inset-0 z-10"></div>
+    <div id="screen-flash" class="fixed inset-0 z-20 bg-amber-300 opacity-0 pointer-events-none transition-opacity duration-300"></div>
+    <div id="intro-blackout" class="fixed inset-0 z-30 bg-black opacity-100 pointer-events-none transition-opacity duration-1000"></div>
+
+    <!-- Dynamic 3D-to-2D Target Lock Markers Layer -->
+    <div id="markers-layer" class="fixed inset-0 z-10 pointer-events-none overflow-hidden"></div>
+
+    <!-- Floating Hit Score Popups Layer -->
+    <div id="popups-layer" class="fixed inset-0 z-20 pointer-events-none overflow-hidden"></div>
+
+    <!-- INTRO CINEMATIC OVERLAY (Skip button & subtitle) -->
+    <div id="intro-overlay" class="fixed inset-0 z-30 flex flex-col justify-between p-6 md:p-10 pointer-events-none">
+        <div class="flex justify-between items-start">
+            <div class="royal-panel px-4 py-2 rounded border border-amber-500/40">
+                <span class="text-xs md:text-sm tracking-widest uppercase text-amber-300 font-cinzel">Vijaya Dashami • The Night of Triumph</span>
+            </div>
+            <button id="skip-intro-btn" class="royal-btn px-5 py-2.5 rounded text-xs md:text-sm font-bold pointer-events-auto">
+                Skip Intro ⏭
+            </button>
+        </div>
+
+        <div class="text-center mb-8">
+            <p id="intro-caption" class="font-cinzel text-lg md:text-2xl text-amber-200 tracking-widest drop-shadow-[0_2px_10px_rgba(0,0,0,0.95)] transition-opacity duration-500">
+                Beneath a thousand ceremonial lamps, the ten-headed effigy of Ravana rises...
+            </p>
+        </div>
+    </div>
+
+    <!-- MAIN MENU OVERLAY -->
+    <div id="main-menu" class="fixed inset-0 z-30 hidden flex items-center justify-center p-4 bg-black/40 backdrop-blur-[2px]">
+        <div class="royal-panel max-w-2xl w-full rounded-lg p-6 md:p-10 text-center border-2 border-amber-500/60">
+            <!-- Ornate Top Emblem -->
+            <div class="flex justify-center mb-3">
+                <svg class="w-16 h-12 text-amber-400" viewBox="0 0 100 60" fill="none">
+                    <path d="M50 5 L62 28 L88 28 L66 42 L74 58 L50 46 L26 58 L34 42 L12 28 L38 28 Z" stroke="currentColor" stroke-width="2.5" fill="rgba(245,158,11,0.2)"/>
+                    <circle cx="50" cy="34" r="8" fill="#fbbf24"/>
+                </svg>
+            </div>
+
+            <p class="text-xs md:text-sm uppercase tracking-[0.35em] text-amber-400 font-semibold mb-1">The Festival of Victory of Light Over Darkness</p>
+            <h1 class="font-title text-3xl sm:text-5xl md:text-6xl font-black text-amber-300 tracking-wider drop-shadow-[0_4px_20px_rgba(245,158,11,0.5)]">
+                DUSSEHRA
+            </h1>
+            <h2 class="font-cinzel text-lg sm:text-2xl text-orange-400 tracking-[0.28em] font-bold mt-1 mb-6 border-b border-amber-500/30 pb-4">
+                — THE FINAL ARROW —
+            </h2>
+
+            <!-- Game Options Grid -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-left mb-6">
+                <!-- Difficulty Selection -->
+                <div class="bg-slate-950/75 p-3.5 rounded border border-amber-500/25">
+                    <label class="block text-xs uppercase tracking-widest text-amber-400/90 mb-2 font-cinzel">Difficulty Mode</label>
+                    <div class="grid grid-cols-3 gap-1.5">
+                        <button data-diff="easy" class="diff-btn royal-btn-secondary py-1.5 px-2 rounded text-xs font-bold">Easy</button>
+                        <button data-diff="normal" class="diff-btn royal-btn-secondary active-opt py-1.5 px-2 rounded text-xs font-bold">Normal</button>
+                        <button data-diff="hard" class="diff-btn royal-btn-secondary py-1.5 px-2 rounded text-xs font-bold">Hard</button>
+                    </div>
+                    <p id="diff-desc" class="text-[11px] text-amber-200/70 mt-2">30 Arrows • Gentle Wind • Standard Trajectory</p>
+                </div>
+
+                <!-- Graphics Quality -->
+                <div class="bg-slate-950/75 p-3.5 rounded border border-amber-500/25">
+                    <label class="block text-xs uppercase tracking-widest text-amber-400/90 mb-2 font-cinzel">Graphics & VFX Quality</label>
+                    <div class="grid grid-cols-3 gap-1.5">
+                        <button data-qual="low" class="qual-btn royal-btn-secondary py-1.5 px-2 rounded text-xs font-bold">Low</button>
+                        <button data-qual="balanced" class="qual-btn royal-btn-secondary py-1.5 px-2 rounded text-xs font-bold">Balanced</button>
+                        <button data-qual="high" class="qual-btn royal-btn-secondary active-opt py-1.5 px-2 rounded text-xs font-bold">High</button>
+                    </div>
+                    <p class="text-[11px] text-amber-200/70 mt-2">Adjusts shadow resolution, firework density & embers</p>
+                </div>
+
+                <!-- Assisted Aim & Action Camera -->
+                <div class="bg-slate-950/75 p-3.5 rounded border border-amber-500/25 flex items-center justify-between">
+                    <div>
+                        <div class="text-xs uppercase tracking-wider text-amber-300 font-cinzel">Celestial Aim Guide</div>
+                        <div class="text-[11px] text-amber-200/60">Full parabolic arc & target magnetism</div>
+                    </div>
+                    <button id="toggle-assist-btn" class="royal-btn-secondary active-opt px-3 py-1.5 rounded text-xs font-bold">ON</button>
+                </div>
+
+                <!-- Audio & High Score -->
+                <div class="bg-slate-950/75 p-3.5 rounded border border-amber-500/25 flex items-center justify-between">
+                    <div>
+                        <div class="text-xs uppercase tracking-wider text-amber-300 font-cinzel">Festival Sound & Music</div>
+                        <div class="text-[11px] text-amber-200/60">Best Score: <span id="menu-best-score" class="text-amber-400 font-bold">0</span></div>
+                    </div>
+                    <button id="menu-sound-btn" class="royal-btn-secondary active-opt px-3 py-1.5 rounded text-xs font-bold">SOUND: ON</button>
+                </div>
+            </div>
+
+            <!-- Primary CTA Buttons -->
+            <div class="flex flex-col sm:flex-row gap-3 justify-center">
+                <button id="start-game-btn" class="royal-btn py-3.5 px-10 rounded text-base md:text-lg font-bold tracking-widest flex-1">
+                    🔥 Wield the Agni Bow (Play)
+                </button>
+                <button id="how-to-play-btn" class="royal-btn-secondary py-3.5 px-6 rounded text-sm font-bold uppercase">
+                    How To Play
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- HOW TO PLAY MODAL -->
+    <div id="how-to-play-modal" class="fixed inset-0 z-40 hidden flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm">
+        <div class="royal-panel max-w-xl w-full rounded-lg p-6 md:p-8 max-h-[90vh] overflow-y-auto">
+            <h3 class="font-cinzel text-2xl font-bold text-amber-300 tracking-wider mb-4 border-b border-amber-500/30 pb-2">
+                Sacred Archery & Battle Phases
+            </h3>
+            <div class="space-y-4 text-sm md:text-base text-amber-100/90 leading-relaxed">
+                <div class="bg-slate-900/80 p-3.5 rounded border-l-4 border-amber-400">
+                    <div class="font-cinzel font-bold text-amber-300">Controls (Desktop & Mobile Touch)</div>
+                    <ul class="list-disc list-inside text-xs md:text-sm space-y-1 mt-1 text-amber-100/80">
+                        <li><strong>Aim Bow:</strong> Move Mouse, drag on Touch Screen, or use <strong>WASD / Arrow Keys</strong>.</li>
+                        <li><strong>Draw & Shoot:</strong> Hold <strong>Left Mouse Button</strong> (or hold Finger on screen) to draw the bowstring. Release to fire!</li>
+                        <li><strong>Zoom Sight:</strong> Scroll <strong>Mouse Wheel</strong>, press <strong>Z</strong>, or tap the HUD Zoom button.</li>
+                        <li><strong>Quick Keys:</strong> Press <strong>R</strong> to restart battle, <strong>ESC / P</strong> to pause.</li>
+                    </ul>
+                </div>
+
+                <div class="space-y-2 text-xs md:text-sm">
+                    <p><strong class="text-amber-400 font-cinzel">PHASE 1 — THE FIRST STRIKE:</strong> Shatter the <strong>3 Golden Kalash Ward Pots</strong> on Ravana's shoulders and waist shield to drop his protective aura.</p>
+                    <p><strong class="text-orange-400 font-cinzel">PHASE 2 — TEN HEADS, TEN TARGETS:</strong> Ignite all <strong>10 individual heads</strong> of Ravana. Each head bursts into flames and awards combo multipliers for consecutive hits.</p>
+                    <p><strong class="text-red-400 font-cinzel">PHASE 3 — THE IGNITION (AMRIT KUND):</strong> Once all 10 heads burn, Ravana's central chest core opens. Loose the <strong>Final Agni Arrow</strong> into the glowing navel/heart vortex!</p>
+                    <p><strong class="text-yellow-300 font-cinzel">PHASE 4 — RAVANA DAHAN:</strong> Witness the grand choreographed fireworks, collapsing effigy, and festival celebration.</p>
+                </div>
+            </div>
+            <div class="mt-6 text-right">
+                <button id="close-howto-btn" class="royal-btn px-6 py-2.5 rounded text-sm font-bold">Return</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- GAMEPLAY HUD -->
+    <div id="gameplay-hud" class="fixed inset-0 z-20 hidden pointer-events-none flex flex-col justify-between p-3 sm:p-5">
+        <!-- Top Bar -->
+        <div class="flex flex-col lg:flex-row items-center justify-between gap-2 w-full">
+            <!-- Score & Stats Panel -->
+            <div class="royal-panel px-4 py-2 rounded flex items-center gap-4 sm:gap-6 pointer-events-auto">
+                <div>
+                    <div class="text-[10px] uppercase tracking-widest text-amber-400/80">Score</div>
+                    <div id="hud-score" class="font-cinzel text-lg sm:text-2xl font-bold text-amber-300">0</div>
+                </div>
+                <div class="h-7 w-[1px] bg-amber-500/30"></div>
+                <div>
+                    <div class="text-[10px] uppercase tracking-widest text-amber-400/80">Streak</div>
+                    <div id="hud-streak" class="font-cinzel text-base sm:text-xl font-bold text-orange-400">x1</div>
+                </div>
+                <div class="h-7 w-[1px] bg-amber-500/30"></div>
+                <div>
+                    <div class="text-[10px] uppercase tracking-widest text-amber-400/80">Accuracy</div>
+                    <div id="hud-accuracy" class="font-cinzel text-base sm:text-xl font-bold text-amber-200">100%</div>
+                </div>
+                <div class="h-7 w-[1px] bg-amber-500/30"></div>
+                <div>
+                    <div class="text-[10px] uppercase tracking-widest text-amber-400/80">Arrows</div>
+                    <div id="hud-arrows" class="font-cinzel text-base sm:text-xl font-bold text-amber-300">30</div>
+                </div>
+            </div>
+
+            <!-- 10-Head Target Tracker & Objective Banner -->
+            <div class="flex flex-col items-center">
+                <div id="hud-heads-row" class="flex items-center gap-1 sm:gap-1.5 royal-panel px-3 py-1.5 rounded">
+                    <!-- Populated dynamically with 10 head icons -->
+                </div>
+                <div id="hud-phase-banner" class="mt-1.5 px-4 py-0.5 rounded bg-gradient-to-r from-transparent via-red-950/90 to-transparent border-y border-amber-500/40 text-center">
+                    <span id="hud-objective-text" class="font-cinzel text-xs sm:text-sm font-bold tracking-widest text-amber-300 uppercase">
+                        PHASE 1: SHATTER THE 3 GOLDEN KALASH SEALS (0/3)
+                    </span>
+                </div>
+            </div>
+
+            <!-- Right Utility Controls -->
+            <div class="flex items-center gap-2 pointer-events-auto">
+                <div class="royal-panel px-3 py-1.5 rounded text-center mr-1 hidden sm:block">
+                    <div class="text-[10px] uppercase tracking-widest text-amber-400/80">Wind</div>
+                    <div id="hud-wind" class="text-xs font-bold text-amber-200">Calm 0.0</div>
+                </div>
+                <button id="hud-zoom-btn" title="Toggle Zoom (Z)" class="royal-btn-secondary px-3 py-2 rounded text-xs font-bold">
+                    🔍 1x
+                </button>
+                <button id="hud-assist-btn" title="Toggle Aim Guide" class="royal-btn-secondary px-3 py-2 rounded text-xs font-bold">
+                    🎯 Guide
+                </button>
+                <button id="hud-sound-btn" title="Mute / Unmute Audio" class="royal-btn-secondary px-3 py-2 rounded text-xs font-bold">
+                    🔊
+                </button>
+                <button id="hud-pause-btn" title="Pause Game (ESC)" class="royal-btn-secondary px-3 py-2 rounded text-xs font-bold">
+                    ⏸
+                </button>
+            </div>
+        </div>
+
+        <!-- Center Crosshair & Circular Draw Power Gauge -->
+        <div class="relative flex-1 flex items-center justify-center">
+            <div id="crosshair-wrapper" class="relative w-28 h-28 flex items-center justify-center opacity-90 transition-transform duration-75">
+                <svg class="w-full h-full -rotate-90" viewBox="0 0 100 100">
+                    <!-- Outer decorative ring -->
+                    <circle cx="50" cy="50" r="42" stroke="rgba(251, 191, 36, 0.22)" stroke-width="1.5" fill="none" stroke-dasharray="4 4"/>
+                    <!-- Draw power background ring -->
+                    <circle cx="50" cy="50" r="34" stroke="rgba(255, 255, 255, 0.12)" stroke-width="3.5" fill="none"/>
+                    <!-- Active draw power ring -->
+                    <circle id="draw-power-circle" cx="50" cy="50" r="34" stroke="#ff6b00" stroke-width="4" fill="none"
+                        stroke-dasharray="213.6" stroke-dashoffset="213.6" stroke-linecap="round"/>
+                </svg>
+                <!-- Center precision point & ornate ticks -->
+                <div class="absolute inset-0 flex items-center justify-center">
+                    <div class="w-1.5 h-1.5 rounded-full bg-amber-300 shadow-[0_0_8px_#ffd700]"></div>
+                    <div class="absolute w-5 h-[1px] bg-amber-400/60 -left-1"></div>
+                    <div class="absolute w-5 h-[1px] bg-amber-400/60 -right-1"></div>
+                    <div class="absolute h-5 w-[1px] bg-amber-400/60 -top-1"></div>
+                    <div class="absolute h-5 w-[1px] bg-amber-400/60 -bottom-1"></div>
+                </div>
+                <!-- Draw Power Percentage Readout -->
+                <div id="draw-power-label" class="absolute -bottom-5 text-[11px] font-bold tracking-widest text-amber-300 opacity-0 transition-opacity">
+                    100%
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom Bar: Controls Hint & Action Camera Banner -->
+        <div class="flex justify-between items-end">
+            <div class="royal-panel px-3.5 py-2 rounded text-xs text-amber-200/80 hidden md:block">
+                <span class="text-amber-400 font-bold">HOLD CLICK / TOUCH:</span> Draw Bow &nbsp;|&nbsp;
+                <span class="text-amber-400 font-bold">RELEASE:</span> Shoot &nbsp;|&nbsp;
+                <span class="text-amber-400 font-bold">SCROLL / Z:</span> Zoom &nbsp;|&nbsp;
+                <span class="text-amber-400 font-bold">R:</span> Restart
+            </div>
+            <div id="action-cam-badge" class="hidden royal-panel px-4 py-1.5 rounded border-amber-400 text-amber-300 font-cinzel text-xs tracking-widest uppercase animate-pulse">
+                🎥 Agni Astra Action Cam
+            </div>
+        </div>
+    </div>
+
+    <!-- PAUSE MODAL -->
+    <div id="pause-modal" class="fixed inset-0 z-40 hidden flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+        <div class="royal-panel max-w-md w-full rounded-lg p-6 md:p-8 text-center">
+            <h3 class="font-cinzel text-2xl md:text-3xl font-bold text-amber-300 tracking-widest mb-2">GAME PAUSED</h3>
+            <p class="text-xs uppercase tracking-widest text-amber-400/80 mb-6">The Festival Grounds Await Your Arrow</p>
+            <div class="flex flex-col gap-3">
+                <button id="resume-btn" class="royal-btn py-3 rounded font-bold text-sm">Resume Battle</button>
+                <button id="pause-restart-btn" class="royal-btn-secondary py-3 rounded font-bold text-sm uppercase">Restart Attempt (R)</button>
+                <button id="pause-menu-btn" class="royal-btn-secondary py-3 rounded font-bold text-sm uppercase">Return to Main Menu</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- VICTORY SCREEN (RAVANA DAHAN COMPLETE) -->
+    <div id="victory-modal" class="fixed inset-0 z-40 hidden flex items-center justify-center p-4 bg-black/45 backdrop-blur-[2px]">
+        <div class="royal-panel max-w-xl w-full rounded-lg p-6 md:p-9 text-center border-2 border-amber-400">
+            <div class="text-xs uppercase tracking-[0.35em] text-amber-400 font-bold mb-1">Adharma Vanquished • Light Prevails</div>
+            <h2 class="font-title text-3xl sm:text-5xl font-black text-amber-300 drop-shadow-[0_0_25px_rgba(251,191,36,0.7)]">
+                VICTORY
+            </h2>
+            <p class="font-cinzel text-lg sm:text-2xl text-orange-400 font-bold tracking-[0.2em] mt-1 mb-6">
+                ✨ SHUBH DUSSEHRA • HAPPY VIJAYA DASHAMI ✨
+            </p>
+
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6 text-center">
+                <div class="bg-slate-950/85 p-3 rounded border border-amber-500/30">
+                    <div class="text-[10px] uppercase tracking-widest text-amber-400/80">Final Score</div>
+                    <div id="vic-score" class="font-cinzel text-xl font-bold text-amber-300 mt-1">0</div>
+                </div>
+                <div class="bg-slate-950/85 p-3 rounded border border-amber-500/30">
+                    <div class="text-[10px] uppercase tracking-widest text-amber-400/80">Accuracy</div>
+                    <div id="vic-accuracy" class="font-cinzel text-xl font-bold text-amber-200 mt-1">0%</div>
+                </div>
+                <div class="bg-slate-950/85 p-3 rounded border border-amber-500/30">
+                    <div class="text-[10px] uppercase tracking-widest text-amber-400/80">Targets Hit</div>
+                    <div id="vic-targets" class="font-cinzel text-xl font-bold text-orange-400 mt-1">14 / 14</div>
+                </div>
+                <div class="bg-slate-950/85 p-3 rounded border border-amber-500/30">
+                    <div class="text-[10px] uppercase tracking-widest text-amber-400/80">Best Score</div>
+                    <div id="vic-best" class="font-cinzel text-xl font-bold text-yellow-300 mt-1">0</div>
+                </div>
+            </div>
+
+            <div class="flex flex-col sm:flex-row gap-3 justify-center">
+                <button id="vic-replay-btn" class="royal-btn py-3.5 px-8 rounded font-bold text-sm sm:text-base flex-1">
+                    🔥 Play Again
+                </button>
+                <button id="vic-menu-btn" class="royal-btn-secondary py-3.5 px-6 rounded font-bold text-sm uppercase">
+                    Main Menu
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- DEFEAT SCREEN (OUT OF ARROWS) -->
+    <div id="defeat-modal" class="fixed inset-0 z-40 hidden flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm">
+        <div class="royal-panel max-w-md w-full rounded-lg p-6 md:p-8 text-center border border-red-500/50">
+            <h2 class="font-cinzel text-3xl font-bold text-red-400 tracking-widest mb-2">QUIVER DEPLETED</h2>
+            <p class="text-sm text-amber-100/80 mb-6">
+                Your celestial arrows are spent before the ten-headed effigy could be fully consumed by flame. Steady your breath and draw again!
+            </p>
+            <div class="flex flex-col sm:flex-row gap-3">
+                <button id="def-retry-btn" class="royal-btn py-3 px-6 rounded font-bold text-sm flex-1">Retry Battle</button>
+                <button id="def-menu-btn" class="royal-btn-secondary py-3 px-6 rounded font-bold text-sm uppercase">Main Menu</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- =========================================================================
+         MAIN 3D GAME ENGINE, PROCEDURAL MODELS, VFX & AUDIO SYNTHESIZER
+         ========================================================================= -->
+    <script>
+    (function () {
+        'use strict';
+
+        // =====================================================================
+        // 1. PROCEDURAL WEB AUDIO API SOUND MANAGER
+        // =====================================================================
+        class FestivalAudioManager {
+            constructor() {
+                this.ctx = null;
+                this.enabled = true;
+                this.ambientGain = null;
+                this.isAmbientPlaying = false;
+                this.fireCrackleTimer = null;
+            }
+
+            init() {
+                if (this.ctx) {
+                    if (this.ctx.state === 'suspended') this.ctx.resume();
+                    return;
+                }
+                const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                if (!AudioCtx) return;
+                this.ctx = new AudioCtx();
+                this.startAmbientDrone();
+            }
+
+            setEnabled(flag) {
+                this.enabled = flag;
+                if (!this.ctx) return;
+                if (this.ambientGain) {
+                    this.ambientGain.gain.setTargetAtTime(this.enabled ? 0.12 : 0.0001, this.ctx.currentTime, 0.25);
+                }
+            }
+
+            // Tanpura & warm festival night drone
+            startAmbientDrone() {
+                if (!this.ctx || this.isAmbientPlaying) return;
+                this.isAmbientPlaying = true;
+
+                const master = this.ctx.createGain();
+                master.gain.value = this.enabled ? 0.12 : 0.0001;
+                master.connect(this.ctx.destination);
+                this.ambientGain = master;
+
+                // Root Sa (D3 = 146.83Hz) & Pa (A3 = 220Hz)
+                const freqs = [73.42, 110.0, 146.83, 220.0];
+                freqs.forEach((f, idx) => {
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = idx % 2 === 0 ? 'sine' : 'triangle';
+                    osc.frequency.value = f;
+                    gain.gain.value = idx === 0 ? 0.35 : 0.14;
+                    osc.connect(gain);
+                    gain.connect(master);
+                    osc.start();
+                });
+            }
+
+            playBowDraw() {
+                if (!this.enabled || !this.ctx) return;
+                const now = this.ctx.currentTime;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(95, now);
+                osc.frequency.linearRampToValueAtTime(145, now + 0.25);
+
+                const filter = this.ctx.createBiquadFilter();
+                filter.type = 'lowpass';
+                filter.frequency.value = 320;
+
+                gain.gain.setValueAtTime(0.001, now);
+                gain.gain.linearRampToValueAtTime(0.08, now + 0.06);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.28);
+
+                osc.connect(filter);
+                filter.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start(now);
+                osc.stop(now + 0.3);
+            }
+
+            playBowRelease(power = 1.0) {
+                if (!this.enabled || !this.ctx) return;
+                const now = this.ctx.currentTime;
+
+                // String twang
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(160 + power * 90, now);
+                osc.frequency.exponentialRampToValueAtTime(55, now + 0.22);
+
+                gain.gain.setValueAtTime(0.28, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.24);
+
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start(now);
+                osc.stop(now + 0.25);
+
+                // Arrow whoosh noise burst
+                this.playNoiseBurst(0.22, 900, 2600, 0.18);
+            }
+
+            playNoiseBurst(duration, freqStart, freqEnd, volume = 0.2) {
+                if (!this.enabled || !this.ctx) return;
+                const now = this.ctx.currentTime;
+                const bufferSize = Math.floor(this.ctx.sampleRate * duration);
+                const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+                const data = buffer.getChannelData(0);
+                for (let i = 0; i < bufferSize; i++) {
+                    data[i] = Math.random() * 2 - 1;
+                }
+
+                const noise = this.ctx.createBufferSource();
+                noise.buffer = buffer;
+
+                const filter = this.ctx.createBiquadFilter();
+                filter.type = 'bandpass';
+                filter.frequency.setValueAtTime(freqStart, now);
+                filter.frequency.exponentialRampToValueAtTime(freqEnd, now + duration);
+                filter.Q.value = 1.8;
+
+                const gain = this.ctx.createGain();
+                gain.gain.setValueAtTime(volume, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+
+                noise.connect(filter);
+                filter.connect(gain);
+                gain.connect(this.ctx.destination);
+                noise.start(now);
+            }
+
+            playTargetImpact(isHead = true) {
+                if (!this.enabled || !this.ctx) return;
+                const now = this.ctx.currentTime;
+
+                // Metallic/wood resonant strike
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = isHead ? 'sawtooth' : 'square';
+                osc.frequency.setValueAtTime(isHead ? 280 : 520, now);
+                osc.frequency.exponentialRampToValueAtTime(48, now + 0.35);
+
+                gain.gain.setValueAtTime(0.32, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.36);
+
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start(now);
+                osc.stop(now + 0.38);
+
+                // Fire ignition burst
+                this.playNoiseBurst(0.45, 1400, 320, 0.26);
+            }
+
+            playFireworkBurst(isGrand = false) {
+                if (!this.enabled || !this.ctx) return;
+                const now = this.ctx.currentTime;
+
+                // Deep thump
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(isGrand ? 110 : 140, now);
+                osc.frequency.exponentialRampToValueAtTime(28, now + (isGrand ? 0.65 : 0.35));
+
+                gain.gain.setValueAtTime(isGrand ? 0.42 : 0.2, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + (isGrand ? 0.68 : 0.38));
+
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start(now);
+                osc.stop(now + (isGrand ? 0.7 : 0.4));
+
+                // Crackle sizzle
+                this.playNoiseBurst(isGrand ? 0.8 : 0.45, 2200, 450, isGrand ? 0.3 : 0.14);
+            }
+
+            playVictoryFanfare() {
+                if (!this.enabled || !this.ctx) return;
+                const now = this.ctx.currentTime;
+                // Celebratory ascending royal brass notes (Sa - Ga - Pa - Sa)
+                const notes = [293.66, 369.99, 440.0, 587.33];
+                notes.forEach((freq, idx) => {
+                    const start = now + idx * 0.18;
+                    const dur = idx === notes.length - 1 ? 1.2 : 0.32;
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(freq, start);
+
+                    gain.gain.setValueAtTime(0.001, start);
+                    gain.gain.linearRampToValueAtTime(0.24, start + 0.04);
+                    gain.gain.exponentialRampToValueAtTime(0.001, start + dur);
+
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.start(start);
+                    osc.stop(start + dur + 0.05);
+                });
+            }
+        }
+
+        const audio = new FestivalAudioManager();
+
+        // =====================================================================
+        // 2. GAME CONFIGURATION & STATE MACHINE
+        // =====================================================================
+        const DIFFICULTY_PRESETS = {
+            easy:   { arrows: 999, windMax: 0.0, gravity: 9.2,  assistDefault: true,  desc: 'Unlimited Arrows • No Wind • Full Celestial Aim Arc' },
+            normal: { arrows: 30,  windMax: 1.8, gravity: 9.8,  assistDefault: true,  desc: '30 Arrows • Gentle Wind • Standard Trajectory' },
+            hard:   { arrows: 18,  windMax: 3.8, gravity: 10.6, assistDefault: false, desc: '18 Arrows • Shifting Festival Wind • True Archer Skill' }
+        };
+
+        const QUALITY_PRESETS = {
+            low:      { pixelRatio: 1.0, shadows: false, fireworkRate: 0.35, particleMult: 0.45 },
+            balanced: { pixelRatio: Math.min(window.devicePixelRatio, 1.5), shadows: true, fireworkRate: 0.7, particleMult: 0.75 },
+            high:     { pixelRatio: Math.min(window.devicePixelRatio, 2.0), shadows: true, fireworkRate: 1.0, particleMult: 1.0 }
+        };
+
+        const STATE = {
+            mode: 'INTRO', // INTRO, MENU, PLAYING, PAUSED, GRAND_BURNING, VICTORY, DEFEAT
+            phase: 1,      // 1 = Kalash Seals (3), 2 = Ten Heads (10), 3 = Amrit Kund Core (1), 4 = Ravana Dahan
+            difficulty: 'normal',
+            quality: 'high',
+            assistedAim: true,
+            score: 0,
+            bestScore: parseInt(localStorage.getItem('dussehra_best_score') || '0', 10),
+            streak: 0,
+            shotsFired: 0,
+            shotsHit: 0,
+            arrowsLeft: 30,
+            windX: 0,
+            startTime: 0,
+
+            // Aiming & Bow State
+            yaw: 0,
+            pitch: 0.16,
+            isDrawing: false,
+            drawPower: 0,
+            zoomLevel: 1, // 1 = 55 deg, 2 = 30 deg
+            targetFov: 55,
+
+            // Intro & Finale Timers
+            introTime: 0,
+            introDuration: 7.2,
+            burningTime: 0,
+            burningTriggered: false
+        };
+
+        // =====================================================================
+        // 3. THREE.JS SCENE, CAMERA & RENDERER INITIALIZATION
+        // =====================================================================
+        const container = document.getElementById('canvas-container');
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x040714);
+        scene.fog = new THREE.FogExp2(0x060919, 0.0052);
+
+        const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 450);
+        const ARCHER_ORIGIN = new THREE.Vector3(0, 6.2, 52);
+        camera.position.copy(ARCHER_ORIGIN);
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(QUALITY_PRESETS.high.pixelRatio);
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        renderer.toneMappingExposure = 1.18;
+        container.appendChild(renderer.domElement);
+
+        // Create soft radial glow sprite texture once for all particles
+        function createGlowTexture() {
+            const c = document.createElement('canvas');
+            c.width = 64;
+            c.height = 64;
+            const ctx = c.getContext('2d');
+            const grad = ctx.createRadialGradient(32, 32, 2, 32, 32, 30);
+            grad.addColorStop(0, 'rgba(255, 255, 255, 1)');
+            grad.addColorStop(0.35, 'rgba(255, 210, 110, 0.85)');
+            grad.addColorStop(0.7, 'rgba(255, 100, 20, 0.35)');
+            grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, 64, 64);
+            return new THREE.CanvasTexture(c);
+        }
+        const glowTexture = createGlowTexture();
+
+        // =====================================================================
+        // 4. LIGHTING & FESTIVAL NIGHT ATMOSPHERE
+        // =====================================================================
+        const ambientLight = new THREE.HemisphereLight(0x283566, 0x3b1d0e, 0.65);
+        scene.add(ambientLight);
+
+        // Moonlight / Rim directional light
+        const dirLight = new THREE.DirectionalLight(0xffd28a, 1.35);
+        dirLight.position.set(28, 55, 38);
+        dirLight.castShadow = true;
+        dirLight.shadow.mapSize.width = 2048;
+        dirLight.shadow.mapSize.height = 2048;
+        dirLight.shadow.camera.near = 10;
+        dirLight.shadow.camera.far = 160;
+        const d = 45;
+        dirLight.shadow.camera.left = -d;
+        dirLight.shadow.camera.right = d;
+        dirLight.shadow.camera.top = d;
+        dirLight.shadow.camera.bottom = -d;
+        scene.add(dirLight);
+
+        // Warm ceremonial up-light illuminating Ravana from the arena pyre base
+        const pyreLight = new THREE.PointLight(0xff7b1a, 2.8, 95, 1.5);
+        pyreLight.position.set(0, 8, -22);
+        scene.add(pyreLight);
+
+        // Dynamic explosion/ignition flash light
+        const flashLight = new THREE.PointLight(0xffae00, 0, 150, 1.2);
+        flashLight.position.set(0, 22, -25);
+        scene.add(flashLight);
+
+        // =====================================================================
+        // 5. GRAND FESTIVAL ARENA ENVIRONMENT BUILDER
+        // =====================================================================
+        const environmentGroup = new THREE.Group();
+        scene.add(environmentGroup);
+
+        // Shared Materials
+        const MATS = {
+            gold: new THREE.MeshStandardMaterial({ color: 0xffc125, metalness: 0.82, roughness: 0.24 }),
+            darkGold: new THREE.MeshStandardMaterial({ color: 0xc58316, metalness: 0.75, roughness: 0.35 }),
+            crimsonCloth: new THREE.MeshStandardMaterial({ color: 0x8b1111, roughness: 0.65, metalness: 0.1 }),
+            saffronCloth: new THREE.MeshStandardMaterial({ color: 0xd9480f, roughness: 0.6, metalness: 0.12 }),
+            royalBlue: new THREE.MeshStandardMaterial({ color: 0x101c42, roughness: 0.5, metalness: 0.25 }),
+            bamboo: new THREE.MeshStandardMaterial({ color: 0x6b4c2b, roughness: 0.88, metalness: 0.05 }),
+            charred: new THREE.MeshStandardMaterial({ color: 0x181311, roughness: 0.92, metalness: 0.05, emissive: 0x421000, emissiveIntensity: 0.6 }),
+            skin: new THREE.MeshStandardMaterial({ color: 0xb86b35, roughness: 0.55, metalness: 0.08 }),
+            darkHair: new THREE.MeshStandardMaterial({ color: 0x111115, roughness: 0.8 }),
+            eyeGlow: new THREE.MeshBasicMaterial({ color: 0xffd000 }),
+            emissiveFlame: new THREE.MeshBasicMaterial({ color: 0xff7700 })
+        };
+
+        function buildFestivalEnvironment() {
+            // 1. Ceremonial Ground Plane
+            const groundGeo = new THREE.CircleGeometry(210, 64);
+            const groundMat = new THREE.MeshStandardMaterial({
+                color: 0x161210,
+                roughness: 0.9,
+                metalness: 0.08
+            });
+            const ground = new THREE.Mesh(groundGeo, groundMat);
+            ground.rotation.x = -Math.PI / 2;
+            ground.receiveShadow = true;
+            environmentGroup.add(ground);
+
+            // Inner Rangoli / Sacred Arena Ring around Ravana
+            const ringGeo = new THREE.RingGeometry(15.5, 17.2, 48);
+            const ringMat = new THREE.MeshBasicMaterial({ color: 0xd97706, side: THREE.DoubleSide });
+            const ring = new THREE.Mesh(ringGeo, ringMat);
+            ring.rotation.x = -Math.PI / 2;
+            ring.position.set(0, 0.05, -35);
+            environmentGroup.add(ring);
+
+            // 2. Foreground Royal Archery Mandap Platform (where player stands)
+            const platformGroup = new THREE.Group();
+            platformGroup.position.set(0, 0, 52);
+
+            const baseMesh = new THREE.Mesh(new THREE.BoxGeometry(10, 4.2, 8), MATS.crimsonCloth);
+            baseMesh.position.y = 2.1;
+            platformGroup.add(baseMesh);
+
+            const trimMesh = new THREE.Mesh(new THREE.BoxGeometry(10.4, 0.35, 8.4), MATS.gold);
+            trimMesh.position.y = 4.2;
+            platformGroup.add(trimMesh);
+
+            // Front balustrade pillars
+            for (let i = -2; i <= 2; i++) {
+                const post = new THREE.Mesh(new THREE.CylinderGeometry(0.14, 0.18, 1.0, 12), MATS.gold);
+                post.position.set(i * 2.1, 4.7, -3.6);
+                platformGroup.add(post);
+            }
+            const rail = new THREE.Mesh(new THREE.BoxGeometry(9.2, 0.14, 0.2), MATS.gold);
+            rail.position.set(0, 5.2, -3.6);
+            platformGroup.add(rail);
+            environmentGroup.add(platformGroup);
+
+            // 3. Avenue of Oil Lamps (Diyas) & Decorative Festival Pillars leading to Ravana
+            const lampPositions = [];
+            for (let z = 38; z >= -20; z -= 8) {
+                lampPositions.push(new THREE.Vector3(-14, 0, z));
+                lampPositions.push(new THREE.Vector3(14, 0, z));
+            }
+            // Circle of lamps around the effigy podium
+            for (let a = 0; a < Math.PI * 2; a += Math.PI / 6) {
+                lampPositions.push(new THREE.Vector3(Math.cos(a) * 16.5, 0, -35 + Math.sin(a) * 16.5));
+            }
+
+            const pillarGeo = new THREE.CylinderGeometry(0.28, 0.4, 3.2, 10);
+            const bowlGeo = new THREE.CylinderGeometry(0.55, 0.25, 0.35, 12);
+            const flameGeo = new THREE.ConeGeometry(0.28, 0.75, 8);
+
+            lampPositions.forEach((pos) => {
+                const stand = new THREE.Mesh(pillarGeo, MATS.darkGold);
+                stand.position.set(pos.x, 1.6, pos.z);
+                environmentGroup.add(stand);
+
+                const bowl = new THREE.Mesh(bowlGeo, MATS.gold);
+                bowl.position.set(pos.x, 3.3, pos.z);
+                environmentGroup.add(bowl);
+
+                const flame = new THREE.Mesh(flameGeo, MATS.emissiveFlame);
+                flame.position.set(pos.x, 3.8, pos.z);
+                environmentGroup.add(flame);
+            });
+
+            // 4. Festive Toran Arches flanking the arena
+            [-26, 26].forEach((xSide) => {
+                for (let z = 15; z >= -25; z -= 20) {
+                    const archGroup = new THREE.Group();
+                    archGroup.position.set(xSide, 0, z);
+                    const p1 = new THREE.Mesh(new THREE.CylinderGeometry(0.45, 0.55, 12, 12), MATS.crimsonCloth);
+                    p1.position.set(0, 6, -3.5);
+                    const p2 = p1.clone();
+                    p2.position.set(0, 6, 3.5);
+                    const beam = new THREE.Mesh(new THREE.BoxGeometry(1.1, 1.2, 8.5), MATS.gold);
+                    beam.position.set(0, 12.2, 0);
+                    archGroup.add(p1, p2, beam);
+                    environmentGroup.add(archGroup);
+                }
+            });
+
+            // 5. Instanced Festival Crowd Silhouettes (hundreds of spectators around the arena perimeter)
+            const crowdCount = 320;
+            const bodyGeo = new THREE.CylinderGeometry(0.32, 0.42, 1.7, 7);
+            const headGeo = new THREE.SphereGeometry(0.26, 7, 7);
+            const crowdMat = new THREE.MeshLambertMaterial({ color: 0x1c1624 });
+            const crowdBodies = new THREE.InstancedMesh(bodyGeo, crowdMat, crowdCount);
+            const crowdHeads = new THREE.InstancedMesh(headGeo, crowdMat, crowdCount);
+
+            const dummy = new THREE.Object3D();
+            let idx = 0;
+            for (let i = 0; i < crowdCount; i++) {
+                // Place spectators on left, right, and rear arcs without blocking view
+                const side = i % 2 === 0 ? 1 : -1;
+                const zPos = -18 + (i / crowdCount) * 62;
+                const xSpread = 19 + Math.random() * 24;
+                const xPos = side * xSpread;
+                const scaleY = 0.88 + Math.random() * 0.28;
+
+                dummy.position.set(xPos, 0.85 * scaleY, zPos);
+                dummy.scale.set(1, scaleY, 1);
+                dummy.updateMatrix();
+                crowdBodies.setMatrixAt(idx, dummy.matrix);
+
+                dummy.position.set(xPos, 1.95 * scaleY, zPos);
+                dummy.scale.set(1, 1, 1);
+                dummy.updateMatrix();
+                crowdHeads.setMatrixAt(idx, dummy.matrix);
+                idx++;
+            }
+            environmentGroup.add(crowdBodies, crowdHeads);
+
+            // 6. Distant Temple Gopuram & Palace Silhouettes on the horizon
+            for (let i = -4; i <= 4; i++) {
+                const distGroup = new THREE.Group();
+                const angle = i * 0.22;
+                const radius = 145;
+                distGroup.position.set(Math.sin(angle) * radius, 0, -Math.cos(angle) * radius);
+                distGroup.lookAt(0, 0, 0);
+
+                const towerH = 26 + (Math.abs(i) % 3) * 10;
+                const tower = new THREE.Mesh(
+                    new THREE.CylinderGeometry(3.2, 7.5, towerH, 4),
+                    new THREE.MeshBasicMaterial({ color: 0x090d20 })
+                );
+                tower.position.y = towerH / 2;
+                tower.rotation.y = Math.PI / 4;
+                distGroup.add(tower);
+
+                const spire = new THREE.Mesh(new THREE.ConeGeometry(3.4, 7, 8), MATS.darkGold);
+                spire.position.y = towerH + 3.5;
+                distGroup.add(spire);
+
+                environmentGroup.add(distGroup);
+            }
+
+            // 7. Starry Night Sky Dome
+            const starCount = 700;
+            const starGeo = new THREE.BufferGeometry();
+            const starPos = new Float32Array(starCount * 3);
+            for (let i = 0; i < starCount; i++) {
+                const theta = Math.random() * Math.PI * 2;
+                const phi = Math.random() * Math.PI * 0.46;
+                const r = 190;
+                starPos[i * 3]     = r * Math.sin(phi) * Math.cos(theta);
+                starPos[i * 3 + 1] = r * Math.cos(phi) + 10;
+                starPos[i * 3 + 2] = r * Math.sin(phi) * Math.sin(theta);
+            }
+            starGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
+            const starMat = new THREE.PointsMaterial({ color: 0xffe8b0, size: 0.9, transparent: true, opacity: 0.8 });
+            environmentGroup.add(new THREE.Points(starGeo, starMat));
+        }
+
+        buildFestivalEnvironment();
+
+        // =====================================================================
+        // 6. PROCEDURAL TEN-HEADED RAVANA EFFIGY & MULTI-STAGE TARGETS
+        // =====================================================================
+        const ravanaGroup = new THREE.Group();
+        const RAVANA_Z = -35;
+        ravanaGroup.position.set(0, 0, RAVANA_Z);
+        scene.add(ravanaGroup);
+
+        // Collections for hit detection & stage animation
+        const kalashTargets = []; // Phase 1: 3 Ward Pots
+        const headTargets = [];   // Phase 2: Exactly 10 Heads
+        let coreTarget = null;    // Phase 3: Central Amrit Kund
+        const destructibleParts = [];
+
+        function buildRavanaEffigy() {
+            // Clear previous if rebuilding on replay
+            while (ravanaGroup.children.length > 0) {
+                ravanaGroup.remove(ravanaGroup.children[0]);
+            }
+            kalashTargets.length = 0;
+            headTargets.length = 0;
+            destructibleParts.length = 0;
+
+            // 1. Ceremonial Octagonal Podium & Pyre Logs
+            const podium = new THREE.Mesh(new THREE.CylinderGeometry(11.5, 13.0, 3.6, 12), MATS.crimsonCloth);
+            podium.position.y = 1.8;
+            podium.castShadow = true;
+            podium.receiveShadow = true;
+            ravanaGroup.add(podium);
+
+            const podiumTrim = new THREE.Mesh(new THREE.CylinderGeometry(11.8, 11.8, 0.45, 12), MATS.gold);
+            podiumTrim.position.y = 3.6;
+            ravanaGroup.add(podiumTrim);
+
+            // Inner Bamboo Lattice Core (visible underneath & when outer armor collapses)
+            const bambooCage = new THREE.Mesh(
+                new THREE.CylinderGeometry(3.6, 5.2, 24, 10, 8, true),
+                new THREE.MeshBasicMaterial({ color: 0x85582a, wireframe: true })
+            );
+            bambooCage.position.y = 15.5;
+            ravanaGroup.add(bambooCage);
+
+            // 2. Lower Skirt / Dhoti Section (Y: 3.6 to 15.0)
+            const skirtGroup = new THREE.Group();
+            skirtGroup.position.set(0, 9.3, 0);
+            const skirtMesh = new THREE.Mesh(new THREE.CylinderGeometry(3.9, 6.4, 11.4, 12), MATS.saffronCloth.clone());
+            skirtMesh.castShadow = true;
+            skirtGroup.add(skirtMesh);
+
+            // Decorative golden belt & vertical brocade stripes
+            const waistBelt = new THREE.Mesh(new THREE.CylinderGeometry(4.15, 4.15, 1.3, 12), MATS.gold);
+            waistBelt.position.y = 5.2;
+            skirtGroup.add(waistBelt);
+
+            for (let i = 0; i < 6; i++) {
+                const angle = (i / 6) * Math.PI * 2;
+                const rib = new THREE.Mesh(new THREE.BoxGeometry(0.45, 11.0, 0.45), MATS.gold);
+                rib.position.set(Math.sin(angle) * 5.0, 0, Math.cos(angle) * 5.0);
+                rib.rotation.y = angle;
+                skirtGroup.add(rib);
+            }
+            ravanaGroup.add(skirtGroup);
+            destructibleParts.push({ mesh: skirtGroup, basePos: skirtGroup.position.clone(), collapseDelay: 2.2, fallDir: new THREE.Vector3(0.2, -1, 0.3) });
+
+            // 3. Upper Royal Torso & Armor (Y: 15.0 to 27.5)
+            const torsoGroup = new THREE.Group();
+            torsoGroup.position.set(0, 21.2, 0);
+            const torsoMesh = new THREE.Mesh(new THREE.CylinderGeometry(5.8, 3.9, 12.4, 12), MATS.crimsonCloth.clone());
+            torsoMesh.castShadow = true;
+            torsoGroup.add(torsoMesh);
+
+            // Golden V-shaped Garland (Vaijayanti Mala) & Chest Armor Plates
+            const chestPlate = new THREE.Mesh(new THREE.BoxGeometry(7.2, 7.6, 3.2), MATS.royalBlue.clone());
+            chestPlate.position.set(0, 0.6, 2.5);
+            torsoGroup.add(chestPlate);
+
+            const goldTrim = new THREE.Mesh(new THREE.TorusGeometry(3.3, 0.32, 10, 24), MATS.gold);
+            goldTrim.position.set(0, 1.2, 3.9);
+            torsoGroup.add(goldTrim);
+
+            // Massive Ornate Shoulder Pauldrons
+            [-1, 1].forEach((dir) => {
+                const pauldron = new THREE.Mesh(new THREE.ConeGeometry(3.2, 4.8, 8), MATS.gold);
+                pauldron.position.set(dir * 7.2, 4.8, 0);
+                pauldron.rotation.z = -dir * 0.65;
+                torsoGroup.add(pauldron);
+
+                // Arms
+                const upperArm = new THREE.Mesh(new THREE.CylinderGeometry(1.35, 1.15, 8.5, 10), MATS.saffronCloth.clone());
+                upperArm.position.set(dir * 8.4, 0.5, 1.2);
+                upperArm.rotation.z = dir * 0.32;
+                torsoGroup.add(upperArm);
+
+                // Right arm holds the giant golden Chandrahasa Sword; Left holds Royal Shield
+                if (dir === 1) {
+                    const swordGroup = new THREE.Group();
+                    swordGroup.position.set(10.5, 3.5, 3.2);
+                    swordGroup.rotation.z = -0.35;
+                    const hilt = new THREE.Mesh(new THREE.CylinderGeometry(0.35, 0.35, 2.6, 8), MATS.darkGold);
+                    const guard = new THREE.Mesh(new THREE.BoxGeometry(2.8, 0.45, 0.8), MATS.gold);
+                    guard.position.y = 1.2;
+                    const blade = new THREE.Mesh(new THREE.BoxGeometry(1.1, 11.5, 0.22), MATS.gold);
+                    blade.position.y = 7.0;
+                    swordGroup.add(hilt, guard, blade);
+                    torsoGroup.add(swordGroup);
+                } else {
+                    const shield = new THREE.Mesh(new THREE.CylinderGeometry(3.6, 3.6, 0.45, 16), MATS.gold);
+                    shield.rotation.x = Math.PI / 2;
+                    shield.rotation.z = 0.25;
+                    shield.position.set(-9.6, -1.2, 3.8);
+                    torsoGroup.add(shield);
+                }
+            });
+
+            ravanaGroup.add(torsoGroup);
+            destructibleParts.push({ mesh: torsoGroup, basePos: torsoGroup.position.clone(), collapseDelay: 1.5, fallDir: new THREE.Vector3(-0.3, -1, 0.4) });
+
+            // 4. PHASE 1 TARGETS: 3 Glowing Ceremonial Kalash Ward Pots
+            const kalashCoords = [
+                { name: 'Left Shoulder Kalash',  pos: new THREE.Vector3(-8.2, 26.8, 2.2) },
+                { name: 'Right Shoulder Kalash', pos: new THREE.Vector3(8.2, 26.8, 2.2) },
+                { name: 'Waist Shield Kalash',   pos: new THREE.Vector3(0.0, 14.5, 5.2) }
+            ];
+
+            kalashCoords.forEach((kc, idx) => {
+                const kGroup = new THREE.Group();
+                kGroup.position.copy(kc.pos);
+
+                const pot = new THREE.Mesh(new THREE.SphereGeometry(1.35, 14, 14), MATS.gold.clone());
+                pot.scale.y = 1.2;
+                const neck = new THREE.Mesh(new THREE.CylinderGeometry(0.65, 0.9, 0.7, 12), MATS.gold);
+                neck.position.y = 1.45;
+                const aura = new THREE.Mesh(
+                    new THREE.SphereGeometry(1.75, 12, 12),
+                    new THREE.MeshBasicMaterial({ color: 0xffae00, wireframe: true, transparent: true, opacity: 0.65 })
+                );
+                kGroup.add(pot, neck, aura);
+                ravanaGroup.add(kGroup);
+
+                kalashTargets.push({
+                    id: idx,
+                    name: kc.name,
+                    group: kGroup,
+                    aura: aura,
+                    localPos: kc.pos.clone(),
+                    radius: 2.35,
+                    destroyed: false
+                });
+            });
+
+            // 5. PHASE 3 TARGET: Central Navel / Heart Weak Point (Nabhi Amrit Kund)
+            const coreGroup = new THREE.Group();
+            const corePos = new THREE.Vector3(0, 19.8, 4.9);
+            coreGroup.position.copy(corePos);
+
+            const coreRing = new THREE.Mesh(new THREE.TorusGeometry(2.1, 0.35, 12, 28), MATS.gold);
+            const coreGem = new THREE.Mesh(
+                new THREE.OctahedronGeometry(1.65, 2),
+                new THREE.MeshStandardMaterial({
+                    color: 0xff2a00,
+                    emissive: 0xff4500,
+                    emissiveIntensity: 0.25,
+                    roughness: 0.2,
+                    metalness: 0.8
+                })
+            );
+            // Protective shutter petals that open in Phase 3
+            const coreShield = new THREE.Mesh(
+                new THREE.CylinderGeometry(2.1, 2.1, 0.5, 8),
+                MATS.darkGold.clone()
+            );
+            coreShield.rotation.x = Math.PI / 2;
+            coreShield.position.z = 0.25;
+
+            coreGroup.add(coreRing, coreGem, coreShield);
+            ravanaGroup.add(coreGroup);
+
+            coreTarget = {
+                name: 'Nabhi Amrit Kund (Final Core)',
+                group: coreGroup,
+                gem: coreGem,
+                shield: coreShield,
+                localPos: corePos,
+                radius: 2.8,
+                vulnerable: false,
+                destroyed: false
+            };
+
+            // 6. PHASE 2 TARGETS: EXACTLY TEN DISTINCT HEADS ON CEREMONIAL COLLAR BEAM
+            // Symmetrical iconic arrangement:
+            // 4 heads on the left (-4 to -1), 1 grand primary head in center (0), 5 heads on the right (+1 to +5)
+            const collarBeam = new THREE.Mesh(new THREE.BoxGeometry(27.5, 1.1, 2.2), MATS.gold);
+            collarBeam.position.set(0, 28.2, 0.6);
+            ravanaGroup.add(collarBeam);
+
+            const headOffsets = [
+                { slot: -4, x: -11.4, y: 31.4, z: 2.3, scale: 0.78, rotY:  0.34, title: '1st Head (Kama - Lust)' },
+                { slot: -3, x: -8.6,  y: 31.0, z: 1.8, scale: 0.82, rotY:  0.25, title: '2nd Head (Krodha - Wrath)' },
+                { slot: -2, x: -5.8,  y: 30.7, z: 1.3, scale: 0.86, rotY:  0.16, title: '3rd Head (Lobha - Greed)' },
+                { slot: -1, x: -3.0,  y: 30.5, z: 0.9, scale: 0.91, rotY:  0.08, title: '4th Head (Moha - Delusion)' },
+                { slot:  0, x:  0.0,  y: 31.2, z: 0.6, scale: 1.18, rotY:  0.00, title: '5th Head (Ahankara - Central Crown)' },
+                { slot:  1, x:  3.0,  y: 30.5, z: 0.9, scale: 0.91, rotY: -0.08, title: '6th Head (Matsarya - Envy)' },
+                { slot:  2, x:  5.8,  y: 30.7, z: 1.3, scale: 0.86, rotY: -0.16, title: '7th Head (Manas - Pride)' },
+                { slot:  3, x:  8.6,  y: 31.0, z: 1.8, scale: 0.82, rotY: -0.25, title: '8th Head (Buddhi - Hubris)' },
+                { slot:  4, x:  11.4, y: 31.4, z: 2.3, scale: 0.78, rotY: -0.34, title: '9th Head (Chitta - Deceit)' },
+                { slot:  5, x:  14.1, y: 31.9, z: 2.9, scale: 0.75, rotY: -0.42, title: '10th Head (Aham - Ego)' }
+            ];
+
+            headOffsets.forEach((cfg, index) => {
+                const hGroup = new THREE.Group();
+                hGroup.position.set(cfg.x, cfg.y, cfg.z);
+                hGroup.scale.setScalar(cfg.scale);
+                hGroup.rotation.y = cfg.rotY;
+
+                // Neck pillar connecting to beam
+                const neck = new THREE.Mesh(new THREE.CylinderGeometry(0.65, 0.8, 1.6, 10), MATS.gold);
+                neck.position.y = -1.5;
+                hGroup.add(neck);
+
+                // Face sculpture
+                const faceMat = MATS.skin.clone();
+                const face = new THREE.Mesh(new THREE.CylinderGeometry(1.22, 0.98, 2.35, 14), faceMat);
+                face.castShadow = true;
+                hGroup.add(face);
+
+                // Royal Tilak on forehead
+                const tilak = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.65, 0.12), new THREE.MeshBasicMaterial({ color: 0xff2200 }));
+                tilak.position.set(0, 0.55, 1.18);
+                hGroup.add(tilak);
+
+                // Fierce Glowing Eyes
+                const eyeMat = MATS.eyeGlow.clone();
+                [-0.44, 0.44].forEach((ex) => {
+                    const eye = new THREE.Mesh(new THREE.SphereGeometry(0.19, 8, 8), eyeMat);
+                    eye.position.set(ex, 0.25, 1.12);
+                    hGroup.add(eye);
+                });
+
+                // Iconic Curved Mustache
+                const stacheL = new THREE.Mesh(new THREE.ConeGeometry(0.18, 0.95, 8), MATS.darkHair);
+                stacheL.rotation.z = Math.PI / 2.3;
+                stacheL.position.set(-0.48, -0.35, 1.18);
+                const stacheR = new THREE.Mesh(new THREE.ConeGeometry(0.18, 0.95, 8), MATS.darkHair);
+                stacheR.rotation.z = -Math.PI / 2.3;
+                stacheR.position.set(0.48, -0.35, 1.18);
+                hGroup.add(stacheL, stacheR);
+
+                // Golden Earrings (Kundala)
+                [-1.28, 1.28].forEach((kx) => {
+                    const earring = new THREE.Mesh(new THREE.TorusGeometry(0.32, 0.09, 8, 14), MATS.gold);
+                    earring.position.set(kx, -0.1, 0.2);
+                    hGroup.add(earring);
+                });
+
+                // Tiered Golden Mukut (Crown)
+                const crownGroup = new THREE.Group();
+                const cTier1 = new THREE.Mesh(new THREE.CylinderGeometry(1.42, 1.22, 0.9, 12), MATS.gold);
+                cTier1.position.y = 1.45;
+                const cTier2 = new THREE.Mesh(new THREE.ConeGeometry(1.15, 2.1, 10), MATS.gold);
+                cTier2.position.y = 2.85;
+                const crest = new THREE.Mesh(new THREE.CircleGeometry(1.45, 12), MATS.darkGold);
+                crest.position.set(0, 2.1, -0.35);
+                crownGroup.add(cTier1, cTier2, crest);
+                hGroup.add(crownGroup);
+
+                ravanaGroup.add(hGroup);
+
+                headTargets.push({
+                    index: index, // 0..9 (10 heads total)
+                    title: cfg.title,
+                    group: hGroup,
+                    faceMesh: face,
+                    crownGroup: crownGroup,
+                    eyeMat: eyeMat,
+                    localPos: new THREE.Vector3(cfg.x, cfg.y + 0.5, cfg.z),
+                    baseY: cfg.y,
+                    radius: 1.95 * cfg.scale,
+                    ignited: false,
+                    collapsed: false,
+                    collapseDelay: 0.4 + index * 0.28
+                });
+            });
+        }
+
+        buildRavanaEffigy();
+
+        // =====================================================================
+        // 7. PLAYER HERO BOW (SHARANG / KODANDA) & CELESTIAL TRAJECTORY ARC
+        // =====================================================================
+        const bowRig = new THREE.Group();
+        camera.add(bowRig);
+        scene.add(camera);
+
+        // Position bow cleanly in lower-right foreground view
+        bowRig.position.set(0.58, -0.32, -1.25);
+        bowRig.rotation.y = -0.08;
+        bowRig.rotation.z = 0.08;
+
+        // Golden Recurve Bow Handle & Limbs
+        const handleMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.032, 0.032, 0.42, 10), MATS.crimsonCloth);
+        bowRig.add(handleMesh);
+
+        const upperLimb = new THREE.Mesh(new THREE.CylinderGeometry(0.015, 0.028, 0.72, 10), MATS.gold);
+        upperLimb.position.set(0, 0.52, -0.05);
+        upperLimb.rotation.x = 0.16;
+        bowRig.add(upperLimb);
+
+        const lowerLimb = new THREE.Mesh(new THREE.CylinderGeometry(0.028, 0.015, 0.72, 10), MATS.gold);
+        lowerLimb.position.set(0, -0.52, -0.05);
+        lowerLimb.rotation.x = -0.16;
+        bowRig.add(lowerLimb);
+
+        // Dynamic Bowstring (3 points: Top Tip -> Nock Point -> Bottom Tip)
+        const stringGeo = new THREE.BufferGeometry();
+        const stringPositions = new Float32Array([
+            0,  0.86, -0.11,
+            0,  0.00, -0.11,
+            0, -0.86, -0.11
+        ]);
+        stringGeo.setAttribute('position', new THREE.BufferAttribute(stringPositions, 3));
+        const stringLine = new THREE.Line(stringGeo, new THREE.LineBasicMaterial({ color: 0xfff3c4, linewidth: 2 }));
+        bowRig.add(stringLine);
+
+        // Nocked Celestial Arrow on the Bow
+        const nockedArrow = new THREE.Group();
+        const shaftMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.01, 0.01, 1.15, 8), MATS.gold);
+        shaftMesh.rotation.x = Math.PI / 2;
+        const tipMesh = new THREE.Mesh(new THREE.ConeGeometry(0.032, 0.14, 8), MATS.emissiveFlame);
+        tipMesh.rotation.x = -Math.PI / 2;
+        tipMesh.position.z = -0.62;
+        const tipLight = new THREE.PointLight(0xff7700, 0.9, 3.5);
+        tipLight.position.z = -0.62;
+        nockedArrow.add(shaftMesh, tipMesh, tipLight);
+        bowRig.add(nockedArrow);
+
+        // 3D Parabolic Trajectory Preview Line
+        const TRAJ_SEGMENTS = 38;
+        const trajGeo = new THREE.BufferGeometry();
+        const trajPoints = new Float32Array(TRAJ_SEGMENTS * 3);
+        trajGeo.setAttribute('position', new THREE.BufferAttribute(trajPoints, 3));
+        const trajMat = new THREE.LineDashedMaterial({
+            color: 0xffb703,
+            dashSize: 1.2,
+            gapSize: 0.7,
+            transparent: true,
+            opacity: 0.75
+        });
+        const trajectoryLine = new THREE.Line(trajGeo, trajMat);
+        trajectoryLine.frustumCulled = false;
+        scene.add(trajectoryLine);
+
+        // =====================================================================
+        // 8. GPU-FRIENDLY PARTICLE, FIRE, SMOKE & FIREWORK SYSTEMS
+        // =====================================================================
+        const activeParticles = [];
+        const activeFireworks = [];
+        const persistentFires = []; // Attached to ignited heads & body during Ravana Dahan
+
+        function spawnParticleBurst(origin, count, options = {}) {
+            const mult = QUALITY_PRESETS[STATE.quality].particleMult;
+            const total = Math.max(4, Math.floor(count * mult));
+            const speed = options.speed || 12;
+            const colors = options.colors || [0xffd700, 0xff7b00, 0xff2a00, 0xffffff];
+            const gravity = options.gravity !== undefined ? options.gravity : 9.5;
+            const size = options.size || 0.95;
+            const lifeRange = options.life || [0.55, 1.35];
+
+            const geo = new THREE.BufferGeometry();
+            const positions = new Float32Array(total * 3);
+            const colorAttr = new Float32Array(total * 3);
+            const velocities = [];
+
+            const tmpColor = new THREE.Color();
+            for (let i = 0; i < total; i++) {
+                positions[i * 3]     = origin.x + (Math.random() - 0.5) * 0.6;
+                positions[i * 3 + 1] = origin.y + (Math.random() - 0.5) * 0.6;
+                positions[i * 3 + 2] = origin.z + (Math.random() - 0.5) * 0.6;
+
+                // Spherical velocity burst
+                const theta = Math.random() * Math.PI * 2;
+                const phi = Math.acos(2 * Math.random() - 1);
+                const vMag = speed * (0.35 + Math.random() * 0.75);
+                velocities.push(new THREE.Vector3(
+                    vMag * Math.sin(phi) * Math.cos(theta),
+                    vMag * Math.cos(phi) + (options.upBias || 2.0),
+                    vMag * Math.sin(phi) * Math.sin(theta)
+                ));
+
+                tmpColor.setHex(colors[Math.floor(Math.random() * colors.length)]);
+                colorAttr[i * 3]     = tmpColor.r;
+                colorAttr[i * 3 + 1] = tmpColor.g;
+                colorAttr[i * 3 + 2] = tmpColor.b;
+            }
+
+            geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+            geo.setAttribute('color', new THREE.BufferAttribute(colorAttr, 3));
+
+            const mat = new THREE.PointsMaterial({
+                size: size,
+                map: glowTexture,
+                vertexColors: true,
+                transparent: true,
+                opacity: 1.0,
+                depthWrite: false,
+                blending: THREE.AdditiveBlending
+            });
+
+            const points = new THREE.Points(geo, mat);
+            scene.add(points);
+
+            activeParticles.push({
+                points,
+                geo,
+                mat,
+                velocities,
+                gravity,
+                age: 0,
+                maxLife: lifeRange[0] + Math.random() * (lifeRange[1] - lifeRange[0])
+            });
+        }
+
+        function launchAerialFirework(startPos, burstHeight, isGrand = false) {
+            const rocketGeo = new THREE.SphereGeometry(0.32, 6, 6);
+            const rocketMat = new THREE.MeshBasicMaterial({ color: 0xffe066 });
+            const rocket = new THREE.Mesh(rocketGeo, rocketMat);
+            rocket.position.copy(startPos);
+            scene.add(rocket);
+
+            activeFireworks.push({
+                mesh: rocket,
+                vel: new THREE.Vector3((Math.random() - 0.5) * 6, 26 + Math.random() * 10, (Math.random() - 0.5) * 6),
+                targetY: burstHeight,
+                isGrand
+            });
+        }
+
+        function updateParticlesAndFireworks(dt) {
+            // 1. Update Aerial Rockets
+            for (let i = activeFireworks.length - 1; i >= 0; i--) {
+                const fw = activeFireworks[i];
+                fw.mesh.position.addScaledVector(fw.vel, dt);
+                // Rocket trail spark
+                if (Math.random() < 0.5) {
+                    spawnParticleBurst(fw.mesh.position, 2, {
+                        speed: 1.8,
+                        gravity: 2,
+                        size: 0.65,
+                        life: [0.18, 0.35],
+                        colors: [0xffd700, 0xff8800]
+                    });
+                }
+
+                if (fw.mesh.position.y >= fw.targetY) {
+                    // Explode into festive golden/saffron/crimson shower
+                    const palettes = [
+                        [0xffd700, 0xffaa00, 0xffffff],
+                        [0xff6b00, 0xffd700, 0xff2200],
+                        [0xff1e42, 0xffb703, 0xffe6a7]
+                    ];
+                    const pal = palettes[Math.floor(Math.random() * palettes.length)];
+                    spawnParticleBurst(fw.mesh.position, fw.isGrand ? 110 : 65, {
+                        speed: fw.isGrand ? 22 : 15,
+                        gravity: 6.5,
+                        size: fw.isGrand ? 1.45 : 1.1,
+                        life: [1.1, 2.0],
+                        colors: pal
+                    });
+                    audio.playFireworkBurst(fw.isGrand);
+
+                    scene.remove(fw.mesh);
+                    fw.mesh.geometry.dispose();
+                    fw.mesh.material.dispose();
+                    activeFireworks.splice(i, 1);
+                }
+            }
+
+            // 2. Update Persistent Effigy Emitters (Burning Heads & Torso)
+            persistentFires.forEach((emitter) => {
+                emitter.timer += dt;
+                if (emitter.timer >= emitter.interval) {
+                    emitter.timer = 0;
+                    const worldPos = new THREE.Vector3();
+                    emitter.targetObj.getWorldPosition(worldPos);
+                    worldPos.add(emitter.offset);
+                    spawnParticleBurst(worldPos, emitter.count, {
+                        speed: emitter.speed,
+                        upBias: emitter.upBias,
+                        gravity: -4.5, // Flames & embers rise upward
+                        size: emitter.size,
+                        life: [0.45, 0.95],
+                        colors: [0xffd700, 0xff6b00, 0xd90429]
+                    });
+                }
+            });
+
+            // 3. Update & Clean Up Particle Clouds
+            for (let i = activeParticles.length - 1; i >= 0; i--) {
+                const p = activeParticles[i];
+                p.age += dt;
+                if (p.age >= p.maxLife) {
+                    scene.remove(p.points);
+                    p.geo.dispose();
+                    p.mat.dispose();
+                    activeParticles.splice(i, 1);
+                    continue;
+                }
+
+                const posArr = p.geo.attributes.position.array;
+                for (let j = 0; j < p.velocities.length; j++) {
+                    const v = p.velocities[j];
+                    v.y -= p.gravity * dt;
+                    posArr[j * 3]     += v.x * dt;
+                    posArr[j * 3 + 1] += v.y * dt;
+                    posArr[j * 3 + 2] += v.z * dt;
+                }
+                p.geo.attributes.position.needsUpdate = true;
+                p.mat.opacity = Math.max(0, 1.0 - (p.age / p.maxLife));
+            }
+        }
+
+        // =====================================================================
+        // 9. PROJECTILE ARROWS, COLLISION DETECTION & ACTION FOLLOW-CAM
+        // =====================================================================
+        const flyingArrows = [];
+        let actionCamArrow = null;
+        let actionCamReturnTimer = 0;
+
+        function getShotParameters() {
+            const dir = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion).normalize();
+            const startPos = new THREE.Vector3();
+            nockedArrow.getWorldPosition(startPos);
+
+            const powerFactor = Math.max(0.25, STATE.drawPower);
+            const speed = 38 + powerFactor * 56; // Up to 94 m/s
+            const velocity = dir.multiplyScalar(speed);
+
+            // Apply subtle magnetic aim assist towards nearest active target if enabled
+            if (STATE.assistedAim) {
+                const activeTargets = getActiveTargetWorldPositions();
+                let bestTarget = null;
+                let bestDist = 4.2;
+                const g = DIFFICULTY_PRESETS[STATE.difficulty].gravity;
+
+                activeTargets.forEach((tPos) => {
+                    const distZ = Math.abs(tPos.z - startPos.z);
+                    const tFlight = distZ / Math.max(15, Math.abs(velocity.z));
+                    const predictedPos = new THREE.Vector3(
+                        startPos.x + velocity.x * tFlight + 0.5 * STATE.windX * tFlight * tFlight,
+                        startPos.y + velocity.y * tFlight - 0.5 * g * tFlight * tFlight,
+                        tPos.z
+                    );
+                    const err = predictedPos.distanceTo(tPos);
+                    if (err < bestDist) {
+                        bestDist = err;
+                        bestTarget = tPos;
+                    }
+                });
+
+                if (bestTarget) {
+                    const distZ = Math.abs(bestTarget.z - startPos.z);
+                    const tFlight = distZ / Math.max(15, Math.abs(velocity.z));
+                    const g = DIFFICULTY_PRESETS[STATE.difficulty].gravity;
+                    const idealVx = (bestTarget.x - startPos.x - 0.5 * STATE.windX * tFlight * tFlight) / tFlight;
+                    const idealVy = (bestTarget.y - startPos.y + 0.5 * g * tFlight * tFlight) / tFlight;
+                    velocity.x = THREE.MathUtils.lerp(velocity.x, idealVx, 0.55);
+                    velocity.y = THREE.MathUtils.lerp(velocity.y, idealVy, 0.55);
+                }
+            }
+
+            return { startPos, velocity };
+        }
+
+        function updateTrajectoryGuide() {
+            const showGuide = STATE.mode === 'PLAYING' && STATE.isDrawing && (STATE.assistedAim || STATE.difficulty !== 'hard');
+            trajectoryLine.visible = showGuide;
+            if (!showGuide) return;
+
+            const { startPos, velocity } = getShotParameters();
+            const g = DIFFICULTY_PRESETS[STATE.difficulty].gravity;
+            const posArr = trajGeo.attributes.position.array;
+
+            for (let i = 0; i < TRAJ_SEGMENTS; i++) {
+                const t = i * 0.042;
+                posArr[i * 3]     = startPos.x + velocity.x * t + 0.5 * STATE.windX * t * t;
+                posArr[i * 3 + 1] = startPos.y + velocity.y * t - 0.5 * g * t * t;
+                posArr[i * 3 + 2] = startPos.z + velocity.z * t;
+            }
+            trajGeo.attributes.position.needsUpdate = true;
+            trajectoryLine.computeLineDistances();
+        }
+
+        function fireArrow() {
+            if (STATE.mode !== 'PLAYING' || STATE.drawPower < 0.12) {
+                STATE.isDrawing = false;
+                STATE.drawPower = 0;
+                return;
+            }
+
+            const { startPos, velocity } = getShotParameters();
+            audio.playBowRelease(STATE.drawPower);
+
+            STATE.shotsFired++;
+            if (STATE.difficulty !== 'easy') {
+                STATE.arrowsLeft = Math.max(0, STATE.arrowsLeft - 1);
+            }
+
+            // Build 3D Flying Arrow Mesh
+            const arrowObj = new THREE.Group();
+            arrowObj.position.copy(startPos);
+
+            const shaft = new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.025, 2.2, 8), MATS.gold);
+            shaft.rotation.x = Math.PI / 2;
+            const head = new THREE.Mesh(new THREE.ConeGeometry(0.08, 0.32, 8), MATS.emissiveFlame);
+            head.rotation.x = -Math.PI / 2;
+            head.position.z = -1.15;
+            const glow = new THREE.PointLight(0xff7b00, 1.8, 12);
+            glow.position.z = -1.1;
+            arrowObj.add(shaft, head, glow);
+
+            arrowObj.lookAt(startPos.clone().add(velocity));
+            scene.add(arrowObj);
+
+            const arrowRecord = {
+                mesh: arrowObj,
+                pos: startPos.clone(),
+                prevPos: startPos.clone(),
+                vel: velocity.clone(),
+                age: 0,
+                active: true
+            };
+            flyingArrows.push(arrowRecord);
+
+            // Check if this shot is closely aligned with Phase 3 Core for dramatic slow-mo follow cam
+            if (STATE.phase === 3 && coreTarget && coreTarget.vulnerable) {
+                const coreWorld = new THREE.Vector3();
+                coreTarget.group.getWorldPosition(coreWorld);
+                const tEst = Math.abs(coreWorld.z - startPos.z) / Math.max(20, Math.abs(velocity.z));
+                const g = DIFFICULTY_PRESETS[STATE.difficulty].gravity;
+                const pred = new THREE.Vector3(
+                    startPos.x + velocity.x * tEst + 0.5 * STATE.windX * tEst * tEst,
+                    startPos.y + velocity.y * tEst - 0.5 * g * tEst * tEst,
+                    coreWorld.z
+                );
+                if (pred.distanceTo(coreWorld) <= coreTarget.radius * 1.15) {
+                    actionCamArrow = arrowRecord;
+                    document.getElementById('action-cam-badge').classList.remove('hidden');
+                }
+            }
+
+            STATE.isDrawing = false;
+            STATE.drawPower = 0;
+            updateHUD();
+        }
+
+        // Helper for segment-to-sphere collision so high-speed arrows never tunnel through targets
+        function segmentSphereIntersect(p0, p1, center, radius) {
+            const d = new THREE.Vector3().subVectors(p1, p0);
+            const f = new THREE.Vector3().subVectors(p0, center);
+            const a = d.dot(d);
+            if (a === 0) return p0.distanceTo(center) <= radius;
+            let t = -f.dot(d) / a;
+            t = Math.max(0, Math.min(1, t));
+            const closest = p0.clone().addScaledVector(d, t);
+            return closest.distanceTo(center) <= radius;
+        }
+
+        function updateFlyingArrows(dt) {
+            const g = DIFFICULTY_PRESETS[STATE.difficulty].gravity;
+            const timeScale = actionCamArrow ? 0.35 : 1.0;
+            const stepDt = dt * timeScale;
+
+            for (let i = flyingArrows.length - 1; i >= 0; i--) {
+                const arr = flyingArrows[i];
+                if (!arr.active) continue;
+
+                arr.age += stepDt;
+                arr.prevPos.copy(arr.pos);
+
+                arr.vel.x += STATE.windX * stepDt;
+                arr.vel.y -= g * stepDt;
+                arr.pos.addScaledVector(arr.vel, stepDt);
+                arr.mesh.position.copy(arr.pos);
+                arr.mesh.lookAt(arr.pos.clone().add(arr.vel));
+
+                // Flame trail particles behind flying arrow
+                spawnParticleBurst(arr.pos, 2, {
+                    speed: 2.2,
+                    gravity: -2.0,
+                    size: 0.75,
+                    life: [0.15, 0.32],
+                    colors: [0xffd700, 0xff5500]
+                });
+
+                // Check Collisions against Ravana targets
+                const hitResult = checkArrowCollisions(arr.prevPos, arr.pos);
+                if (hitResult || arr.pos.y <= 0.2 || arr.age > 4.5 || arr.pos.z < -85) {
+                    if (!hitResult) {
+                        // Missed shot
+                        STATE.streak = 0;
+                        updateHUD();
+                        checkOutOfArrows();
+                    }
+                    if (actionCamArrow === arr) {
+                        actionCamArrow = null;
+                        actionCamReturnTimer = 0.85;
+                        document.getElementById('action-cam-badge').classList.add('hidden');
+                    }
+                    scene.remove(arr.mesh);
+                    flyingArrows.splice(i, 1);
+                }
+            }
+        }
+
+        function checkArrowCollisions(p0, p1) {
+            const worldCenter = new THREE.Vector3();
+
+            // PHASE 1: 3 Kalash Ward Pots
+            if (STATE.phase === 1) {
+                for (let k of kalashTargets) {
+                    if (k.destroyed) continue;
+                    k.group.getWorldPosition(worldCenter);
+                    if (segmentSphereIntersect(p0, p1, worldCenter, k.radius)) {
+                        onKalashHit(k, worldCenter);
+                        return true;
+                    }
+                }
+            }
+
+            // PHASE 2: 10 Distinct Heads
+            if (STATE.phase === 2) {
+                for (let h of headTargets) {
+                    if (h.ignited) continue;
+                    h.group.getWorldPosition(worldCenter);
+                    if (segmentSphereIntersect(p0, p1, worldCenter, h.radius)) {
+                        onHeadHit(h, worldCenter);
+                        return true;
+                    }
+                }
+            }
+
+            // PHASE 3: Central Amrit Kund Core
+            if (STATE.phase === 3 && coreTarget && coreTarget.vulnerable && !coreTarget.destroyed) {
+                coreTarget.group.getWorldPosition(worldCenter);
+                if (segmentSphereIntersect(p0, p1, worldCenter, coreTarget.radius)) {
+                    onCoreFinalHit(worldCenter);
+                    return true;
+                }
+            }
+
+            // Check general body impact (sparks & feedback if player hits armor early)
+            const bodyCenter = new THREE.Vector3(0, 19, RAVANA_Z);
+            if (Math.abs(p1.z - RAVANA_Z) < 3.2 && Math.abs(p1.x) < 7.5 && p1.y > 3 && p1.y < 29) {
+                spawnParticleBurst(p1, 20, { speed: 9, colors: [0xffaa00, 0xff4400], life: [0.3, 0.6] });
+                audio.playTargetImpact(false);
+                spawnFloatingPopup(p1, 'ARMOR DEFLECTED!', '#fde047');
+                STATE.streak = 0;
+                updateHUD();
+                checkOutOfArrows();
+                return true;
+            }
+
+            return false;
+        }
+
+        // =====================================================================
+        // 10. BOSS PROGRESSION HANDLERS & RAVANA DAHAN GRAND SEQUENCE
+        // =====================================================================
+        function onKalashHit(kalash, worldPos) {
+            kalash.destroyed = true;
+            kalash.group.visible = false;
+
+            STATE.shotsHit++;
+            STATE.streak++;
+            const pts = 250 * STATE.streak;
+            STATE.score += pts;
+
+            audio.playTargetImpact(false);
+            audio.playFireworkBurst(false);
+            spawnParticleBurst(worldPos, 55, {
+                speed: 16,
+                size: 1.25,
+                colors: [0xffd700, 0xff8800, 0xffffff],
+                life: [0.6, 1.25]
+            });
+            spawnFloatingPopup(worldPos, `+${pts} KALASH SHATTERED!`, '#ffd700');
+            triggerScreenFlash(0.22);
+
+            const brokenCount = kalashTargets.filter(k => k.destroyed).length;
+            if (brokenCount >= 3) {
+                STATE.phase = 2;
+                spawnFloatingPopup(new THREE.Vector3(0, 32, RAVANA_Z), 'PHASE 2: IGNITE ALL 10 HEADS!', '#ff6b00');
+            }
+
+            randomizeWind();
+            updateHUD();
+        }
+
+        function onHeadHit(head, worldPos) {
+            head.ignited = true;
+
+            // Char face & tilt crown from impact
+            head.faceMesh.material = MATS.charred;
+            head.eyeMat.color.setHex(0xff3300);
+            head.crownGroup.rotation.z = (Math.random() - 0.5) * 0.45;
+            head.group.position.z -= 0.4;
+
+            // Attach persistent roaring flame emitter to this head
+            persistentFires.push({
+                targetObj: head.group,
+                offset: new THREE.Vector3(0, 1.2, 0.5),
+                count: 5,
+                speed: 3.5,
+                upBias: 4.5,
+                size: 1.15,
+                interval: 0.08,
+                timer: 0
+            });
+
+            STATE.shotsHit++;
+            STATE.streak++;
+            const pts = 500 * STATE.streak;
+            STATE.score += pts;
+
+            audio.playTargetImpact(true);
+            audio.playFireworkBurst(false);
+
+            spawnParticleBurst(worldPos, 75, {
+                speed: 18,
+                size: 1.35,
+                colors: [0xffd700, 0xff5500, 0xff1100],
+                life: [0.7, 1.4]
+            });
+
+            // Launch celebratory mini firework from behind the struck head
+            launchAerialFirework(worldPos.clone().add(new THREE.Vector3(0, 2, -2)), worldPos.y + 16 + Math.random() * 8, false);
+
+            spawnFloatingPopup(worldPos, `+${pts} • ${head.title}`, '#ff9e00');
+            triggerScreenFlash(0.28);
+
+            // Check if all 10 heads are now ablaze
+            const ignitedCount = headTargets.filter(h => h.ignited).length;
+            if (ignitedCount >= 10) {
+                STATE.phase = 3;
+                coreTarget.vulnerable = true;
+                coreTarget.shield.visible = false;
+                coreTarget.gem.material.emissiveIntensity = 2.2;
+                spawnFloatingPopup(new THREE.Vector3(0, 22, RAVANA_Z), 'AMRIT KUND EXPOSED! FIRE THE FINAL ARROW!', '#ff2a00');
+            }
+
+            randomizeWind();
+            updateHUD();
+            checkOutOfArrows();
+        }
+
+        function onCoreFinalHit(worldPos) {
+            if (STATE.burningTriggered) return;
+            STATE.burningTriggered = true;
+            coreTarget.destroyed = true;
+
+            STATE.shotsHit++;
+            STATE.streak++;
+            const timeElapsed = Math.max(10, (performance.now() - STATE.startTime) / 1000);
+            const timeBonus = Math.max(500, Math.floor(4500 - timeElapsed * 25));
+            const finalHitPts = 2500 + timeBonus;
+            STATE.score += finalHitPts;
+
+            if (STATE.score > STATE.bestScore) {
+                STATE.bestScore = STATE.score;
+                localStorage.setItem('dussehra_best_score', String(STATE.bestScore));
+            }
+
+            // Enter Phase 4: Grand Burning Choreography
+            STATE.phase = 4;
+            STATE.mode = 'GRAND_BURNING';
+            STATE.burningTime = 0;
+            actionCamArrow = null;
+            document.getElementById('action-cam-badge').classList.add('hidden');
+            document.getElementById('gameplay-hud').classList.add('hidden');
+            document.getElementById('markers-layer').innerHTML = '';
+
+            // Massive initial ignition flash & shockwave
+            triggerScreenFlash(0.85);
+            flashLight.intensity = 10.0;
+            audio.playFireworkBurst(true);
+            audio.playVictoryFanfare();
+
+            spawnParticleBurst(worldPos, 160, {
+                speed: 28,
+                size: 1.8,
+                colors: [0xffffff, 0xffd700, 0xff5500, 0xff0000],
+                life: [1.2, 2.4]
+            });
+
+            // Add roaring fire emitters across Ravana's torso, arms, and skirt
+            const fireSpots = [
+                new THREE.Vector3(0, 18, 3),
+                new THREE.Vector3(-6, 22, 2),
+                new THREE.Vector3(6, 22, 2),
+                new THREE.Vector3(0, 10, 4),
+                new THREE.Vector3(-4, 8, 3),
+                new THREE.Vector3(4, 8, 3)
+            ];
+            fireSpots.forEach((offset) => {
+                persistentFires.push({
+                    targetObj: ravanaGroup,
+                    offset,
+                    count: 8,
+                    speed: 6.5,
+                    upBias: 7.5,
+                    size: 1.65,
+                    interval: 0.06,
+                    timer: Math.random() * 0.05
+                });
+            });
+        }
+
+        function updateGrandBurningSequence(dt) {
+            STATE.burningTime += dt;
+            const t = STATE.burningTime;
+
+            // Fade dynamic ignition flash light into warm flickering bonfire glow
+            flashLight.intensity = 4.5 + Math.sin(t * 18) * 1.5;
+
+            // Periodically launch grand fireworks from Ravana's structure & arena sky
+            if (Math.random() < 4.5 * dt * QUALITY_PRESETS[STATE.quality].fireworkRate) {
+                const launchX = (Math.random() - 0.5) * 36;
+                const launchZ = RAVANA_Z + (Math.random() - 0.5) * 14;
+                launchAerialFirework(
+                    new THREE.Vector3(launchX, 6 + Math.random() * 18, launchZ),
+                    34 + Math.random() * 24,
+                    Math.random() < 0.45
+                );
+            }
+
+            // Staggered reaction and collapse of the 10 heads
+            headTargets.forEach((h) => {
+                if (t > h.collapseDelay) {
+                    const fallTime = t - h.collapseDelay;
+                    h.group.rotation.x += 1.4 * dt;
+                    h.group.rotation.z += (h.index % 2 === 0 ? 1 : -1) * 0.9 * dt;
+                    h.group.position.y = Math.max(3.5, h.baseY - fallTime * fallTime * 6.5);
+                }
+            });
+
+            // Controlled structural collapse of torso and skirt revealing burning bamboo lattice
+            destructibleParts.forEach((part) => {
+                if (t > part.collapseDelay) {
+                    const cTime = t - part.collapseDelay;
+                    part.mesh.position.y = Math.max(4.0, part.basePos.y - cTime * 2.4);
+                    part.mesh.rotation.z += part.fallDir.x * 0.25 * dt;
+                    part.mesh.rotation.x += part.fallDir.z * 0.22 * dt;
+                }
+            });
+
+            // Pull camera back & crane upward to reveal the entire cheering celebration arena
+            const camProgress = Math.min(1, t / 6.5);
+            const smoothP = camProgress * camProgress * (3 - 2 * camProgress);
+            const targetPos = new THREE.Vector3(
+                Math.sin(t * 0.25) * 14,
+                THREE.MathUtils.lerp(7.5, 22.0, smoothP),
+                THREE.MathUtils.lerp(48.0, 68.0, smoothP)
+            );
+            camera.position.lerp(targetPos, dt * 2.5);
+            camera.lookAt(0, 18 - smoothP * 4, RAVANA_Z);
+            bowRig.visible = false;
+
+            // Present Victory Screen after 6.8 seconds of spectacle
+            if (t >= 6.8 && STATE.mode === 'GRAND_BURNING') {
+                STATE.mode = 'VICTORY';
+                showVictoryScreen();
+            }
+        }
+
+        function checkOutOfArrows() {
+            if (STATE.mode !== 'PLAYING') return;
+            if (STATE.difficulty !== 'easy' && STATE.arrowsLeft <= 0 && flyingArrows.length === 0 && !STATE.burningTriggered) {
+                STATE.mode = 'DEFEAT';
+                document.getElementById('gameplay-hud').classList.add('hidden');
+                document.getElementById('markers-layer').innerHTML = '';
+                document.getElementById('defeat-modal').classList.remove('hidden');
+            }
+        }
+
+        // =====================================================================
+        // 11. OPENING CINEMATIC CAMERA TOUR (5–8 SECONDS)
+        // =====================================================================
+        function updateIntroCinematic(dt) {
+            STATE.introTime += dt;
+            const t = STATE.introTime;
+            const p = Math.min(1, t / STATE.introDuration);
+
+            // Fade out initial black overlay
+            if (t > 0.15) {
+                document.getElementById('intro-blackout').style.opacity = '0';
+            }
+
+            // Ambient distant fireworks during intro
+            if (Math.random() < 1.8 * dt) {
+                launchAerialFirework(
+                    new THREE.Vector3((Math.random() - 0.5) * 70, 5, RAVANA_Z - 15 - Math.random() * 25),
+                    36 + Math.random() * 18,
+                    false
+                );
+            }
+
+            const captionEl = document.getElementById('intro-caption');
+            bowRig.visible = false;
+
+            if (p < 0.45) {
+                // Segment 1: Low-angle majestic crane up Ravana's ten heads
+                const segP = p / 0.45;
+                const ease = segP * segP * (3 - 2 * segP);
+                camera.position.set(
+                    THREE.MathUtils.lerp(-18, 12, ease),
+                    THREE.MathUtils.lerp(6, 31, ease),
+                    THREE.MathUtils.lerp(-5, 8, ease)
+                );
+                camera.lookAt(0, THREE.MathUtils.lerp(14, 31, ease), RAVANA_Z);
+                captionEl.textContent = 'Ten crowns of arrogance rise above the illuminated Dussehra arena...';
+            } else {
+                // Segment 2: Smooth glide back to the royal archery platform
+                const segP = (p - 0.45) / 0.55;
+                const ease = segP * segP * (3 - 2 * segP);
+                camera.position.set(
+                    THREE.MathUtils.lerp(12, ARCHER_ORIGIN.x, ease),
+                    THREE.MathUtils.lerp(31, ARCHER_ORIGIN.y, ease),
+                    THREE.MathUtils.lerp(8, ARCHER_ORIGIN.z, ease)
+                );
+                camera.lookAt(0, THREE.MathUtils.lerp(31, 21, ease), RAVANA_Z);
+                captionEl.textContent = 'Take up the sacred Agni Bow. Loose the Final Arrow of Victory!';
+            }
+
+            if (p >= 1.0) {
+                finishIntroToMenu();
+            }
+        }
+
+        function finishIntroToMenu() {
+            STATE.mode = 'MENU';
+            document.getElementById('intro-overlay').classList.add('hidden');
+            document.getElementById('intro-blackout').style.opacity = '0';
+            document.getElementById('main-menu').classList.remove('hidden');
+            document.getElementById('menu-best-score').textContent = STATE.bestScore.toLocaleString();
+            camera.position.copy(ARCHER_ORIGIN);
+            camera.lookAt(0, 22, RAVANA_Z);
+        }
+
+        // =====================================================================
+        // 12. UI, HUD, 3D-TO-2D MARKERS & POPUPS MANAGEMENT
+        // =====================================================================
+        function initHeadsHUD() {
+            const row = document.getElementById('hud-heads-row');
+            row.innerHTML = '';
+            for (let i = 0; i < 10; i++) {
+                const badge = document.createElement('div');
+                badge.className = 'head-badge';
+                badge.id = `head-badge-${i}`;
+                badge.title = `Head ${i + 1}`;
+                badge.innerHTML = `
+                    <svg class="w-4 h-5 text-amber-300" viewBox="0 0 24 28" fill="currentColor">
+                        <path d="M12 2 L16 9 L21 7 L19 14 L5 14 L3 7 L8 9 Z"/>
+                        <circle cx="12" cy="19" r="5"/>
+                    </svg>
+                `;
+                row.appendChild(badge);
+            }
+        }
+        initHeadsHUD();
+
+        function updateHUD() {
+            document.getElementById('hud-score').textContent = STATE.score.toLocaleString();
+            document.getElementById('hud-streak').textContent = `x${Math.max(1, STATE.streak)}`;
+            const acc = STATE.shotsFired > 0 ? Math.round((STATE.shotsHit / STATE.shotsFired) * 100) : 100;
+            document.getElementById('hud-accuracy').textContent = `${acc}%`;
+            document.getElementById('hud-arrows').textContent = STATE.difficulty === 'easy' ? '∞' : STATE.arrowsLeft;
+
+            // Wind indicator
+            const windEl = document.getElementById('hud-wind');
+            if (Math.abs(STATE.windX) < 0.15) {
+                windEl.textContent = 'Calm 0.0';
+            } else {
+                const dirArrow = STATE.windX > 0 ? '→' : '←';
+                windEl.textContent = `${dirArrow} ${Math.abs(STATE.windX).toFixed(1)} m/s`;
+            }
+
+            // Update 10-head tracker badges
+            headTargets.forEach((h, idx) => {
+                const el = document.getElementById(`head-badge-${idx}`);
+                if (el) {
+                    el.classList.toggle('ignited', h.ignited);
+                }
+            });
+
+            // Phase Objective Text
+            const objEl = document.getElementById('hud-objective-text');
+            if (STATE.phase === 1) {
+                const done = kalashTargets.filter(k => k.destroyed).length;
+                objEl.textContent = `PHASE 1: SHATTER THE 3 GOLDEN KALASH WARDS (${done}/3)`;
+            } else if (STATE.phase === 2) {
+                const done = headTargets.filter(h => h.ignited).length;
+                objEl.textContent = `PHASE 2: IGNITE ALL TEN HEADS OF RAVANA (${done}/10)`;
+            } else if (STATE.phase === 3) {
+                objEl.textContent = `PHASE 3: PIERCE THE GLOWING CENTRAL AMRIT KUND CORE!`;
+            }
+        }
+
+        function getActiveTargetWorldPositions() {
+            const list = [];
+            const v = new THREE.Vector3();
+            if (STATE.phase === 1) {
+                kalashTargets.forEach(k => {
+                    if (!k.destroyed) {
+                        k.group.getWorldPosition(v);
+                        list.push(v.clone());
+                    }
+                });
+            } else if (STATE.phase === 2) {
+                headTargets.forEach(h => {
+                    if (!h.ignited) {
+                        h.group.getWorldPosition(v);
+                        list.push(v.clone());
+                    }
+                });
+            } else if (STATE.phase === 3 && coreTarget && !coreTarget.destroyed) {
+                coreTarget.group.getWorldPosition(v);
+                list.push(v.clone());
+            }
+            return list;
+        }
+
+        // Project active 3D targets onto 2D screen diamond markers
+        function updateTargetScreenMarkers() {
+            const layer = document.getElementById('markers-layer');
+            if (STATE.mode !== 'PLAYING') {
+                layer.innerHTML = '';
+                return;
+            }
+
+            const positions = getActiveTargetWorldPositions();
+            while (layer.children.length < positions.length) {
+                const div = document.createElement('div');
+                div.className = 'target-marker';
+                div.innerHTML = '<div class="marker-diamond"></div>';
+                layer.appendChild(div);
+            }
+            while (layer.children.length > positions.length) {
+                layer.removeChild(layer.lastChild);
+            }
+
+            const halfW = window.innerWidth / 2;
+            const halfH = window.innerHeight / 2;
+
+            positions.forEach((worldPos, i) => {
+                const el = layer.children[i];
+                const proj = worldPos.clone().project(camera);
+                if (proj.z > 1) {
+                    el.style.opacity = '0';
+                    return;
+                }
+                const sx = (proj.x * halfW) + halfW;
+                const sy = -(proj.y * halfH) + halfH;
+                el.style.opacity = '1';
+                el.style.left = `${sx}px`;
+                el.style.top = `${sy}px`;
+                el.classList.toggle('marker-core', STATE.phase === 3);
+            });
+        }
+
+        function spawnFloatingPopup(worldPos, text, colorHex) {
+            const layer = document.getElementById('popups-layer');
+            const proj = worldPos.clone().project(camera);
+            const sx = (proj.x * window.innerWidth * 0.5) + window.innerWidth * 0.5;
+            const sy = -(proj.y * window.innerHeight * 0.5) + window.innerHeight * 0.5;
+
+            const div = document.createElement('div');
+            div.className = 'hit-popup text-sm md:text-lg';
+            div.style.left = `${Math.max(40, Math.min(window.innerWidth - 180, sx - 60))}px`;
+            div.style.top = `${Math.max(40, Math.min(window.innerHeight - 60, sy))}px`;
+            div.style.color = colorHex;
+            div.textContent = text;
+            layer.appendChild(div);
+
+            setTimeout(() => {
+                if (div.parentNode) div.parentNode.removeChild(div);
+            }, 1350);
+        }
+
+        function triggerScreenFlash(peakOpacity = 0.35) {
+            const el = document.getElementById('screen-flash');
+            el.style.opacity = String(peakOpacity);
+            setTimeout(() => {
+                el.style.opacity = '0';
+            }, 140);
+        }
+
+        function randomizeWind() {
+            const maxW = DIFFICULTY_PRESETS[STATE.difficulty].windMax;
+            STATE.windX = (Math.random() * 2 - 1) * maxW;
+        }
+
+        // =====================================================================
+        // 13. GAME FLOW: START, RESTART, PAUSE & VICTORY
+        // =====================================================================
+        function startNewBattle() {
+            audio.init();
+            const preset = DIFFICULTY_PRESETS[STATE.difficulty];
+
+            STATE.mode = 'PLAYING';
+            STATE.phase = 1;
+            STATE.score = 0;
+            STATE.streak = 0;
+            STATE.shotsFired = 0;
+            STATE.shotsHit = 0;
+            STATE.arrowsLeft = preset.arrows;
+            STATE.isDrawing = false;
+            STATE.drawPower = 0;
+            STATE.yaw = 0;
+            STATE.pitch = 0.16;
+            STATE.zoomLevel = 1;
+            STATE.targetFov = 55;
+            STATE.burningTime = 0;
+            STATE.burningTriggered = false;
+            STATE.startTime = performance.now();
+
+            // Clear old particles & rebuild fresh Ravana effigy
+            persistentFires.length = 0;
+            flyingArrows.forEach(a => scene.remove(a.mesh));
+            flyingArrows.length = 0;
+            actionCamArrow = null;
+            flashLight.intensity = 0;
+
+            buildRavanaEffigy();
+            randomizeWind();
+
+            camera.position.copy(ARCHER_ORIGIN);
+            bowRig.visible = true;
+
+            // Hide all modals, show HUD
+            document.getElementById('main-menu').classList.add('hidden');
+            document.getElementById('pause-modal').classList.add('hidden');
+            document.getElementById('victory-modal').classList.add('hidden');
+            document.getElementById('defeat-modal').classList.add('hidden');
+            document.getElementById('gameplay-hud').classList.remove('hidden');
+
+            updateHUD();
+        }
+
+        function showVictoryScreen() {
+            const acc = STATE.shotsFired > 0 ? Math.round((STATE.shotsHit / STATE.shotsFired) * 100) : 100;
+            document.getElementById('vic-score').textContent = STATE.score.toLocaleString();
+            document.getElementById('vic-accuracy').textContent = `${acc}%`;
+            document.getElementById('vic-targets').textContent = `14 / 14`;
+            document.getElementById('vic-best').textContent = STATE.bestScore.toLocaleString();
+            document.getElementById('victory-modal').classList.remove('hidden');
+        }
+
+        // =====================================================================
+        // 14. DESKTOP MOUSE, KEYBOARD & MOBILE TOUCH CONTROLS
+        // =====================================================================
+        const keysPressed = {};
+        let lastPointerX = null;
+        let lastPointerY = null;
+
+        function applyAimDelta(dx, dy) {
+            if (STATE.mode !== 'PLAYING' || actionCamArrow) return;
+            const sens = STATE.zoomLevel === 2 ? 0.0014 : 0.0024;
+            STATE.yaw   = THREE.MathUtils.clamp(STATE.yaw - dx * sens, -0.46, 0.46);
+            STATE.pitch = THREE.MathUtils.clamp(STATE.pitch - dy * sens, -0.06, 0.52);
+        }
+
+        // Mouse Move Aiming
+        window.addEventListener('mousemove', (e) => {
+            if (STATE.mode !== 'PLAYING') return;
+            if (lastPointerX !== null && lastPointerY !== null) {
+                const dx = e.clientX - lastPointerX;
+                const dy = e.clientY - lastPointerY;
+                applyAimDelta(dx, dy);
+            }
+            lastPointerX = e.clientX;
+            lastPointerY = e.clientY;
+        });
+
+        // Mouse Down to Draw Bowstring
+        renderer.domElement.addEventListener('mousedown', (e) => {
+            if (e.button !== 0 || STATE.mode !== 'PLAYING' || actionCamArrow) return;
+            audio.init();
+            STATE.isDrawing = true;
+            STATE.drawPower = 0.08;
+            audio.playBowDraw();
+        });
+
+        // Mouse Up to Release Arrow
+        window.addEventListener('mouseup', (e) => {
+            if (e.button !== 0) return;
+            if (STATE.mode === 'PLAYING' && STATE.isDrawing) {
+                fireArrow();
+            }
+        });
+
+        // Mouse Wheel Zoom
+        window.addEventListener('wheel', (e) => {
+            if (STATE.mode !== 'PLAYING') return;
+            if (e.deltaY < 0) {
+                STATE.zoomLevel = 2;
+                STATE.targetFov = 30;
+            } else {
+                STATE.zoomLevel = 1;
+                STATE.targetFov = 55;
+            }
+            document.getElementById('hud-zoom-btn').textContent = `🔍 ${STATE.zoomLevel}x`;
+        }, { passive: true });
+
+        // Touch Support (Drag to Aim + Hold to Draw + Release to Shoot)
+        renderer.domElement.addEventListener('touchstart', (e) => {
+            if (STATE.mode !== 'PLAYING' || actionCamArrow) return;
+            e.preventDefault();
+            audio.init();
+            const touch = e.touches[0];
+            lastPointerX = touch.clientX;
+            lastPointerY = touch.clientY;
+            STATE.isDrawing = true;
+            STATE.drawPower = 0.1;
+            audio.playBowDraw();
+        }, { passive: false });
+
+        renderer.domElement.addEventListener('touchmove', (e) => {
+            if (STATE.mode !== 'PLAYING' || !e.touches[0]) return;
+            e.preventDefault();
+            const touch = e.touches[0];
+            if (lastPointerX !== null && lastPointerY !== null) {
+                const dx = touch.clientX - lastPointerX;
+                const dy = touch.clientY - lastPointerY;
+                applyAimDelta(dx * 1.35, dy * 1.35);
+            }
+            lastPointerX = touch.clientX;
+            lastPointerY = touch.clientY;
+        }, { passive: false });
+
+        renderer.domElement.addEventListener('touchend', (e) => {
+            if (STATE.mode === 'PLAYING' && STATE.isDrawing) {
+                e.preventDefault();
+                fireArrow();
+            }
+            lastPointerX = null;
+            lastPointerY = null;
+        }, { passive: false });
+
+        // Keyboard Shortcuts
+        window.addEventListener('keydown', (e) => {
+            keysPressed[e.code] = true;
+            if (e.code === 'KeyR' && (STATE.mode === 'PLAYING' || STATE.mode === 'PAUSED')) {
+                startNewBattle();
+            } else if ((e.code === 'Escape' || e.code === 'KeyP') && STATE.mode === 'PLAYING') {
+                STATE.mode = 'PAUSED';
+                document.getElementById('pause-modal').classList.remove('hidden');
+            } else if ((e.code === 'Escape' || e.code === 'KeyP') && STATE.mode === 'PAUSED') {
+                STATE.mode = 'PLAYING';
+                document.getElementById('pause-modal').classList.add('hidden');
+            } else if (e.code === 'KeyZ' && STATE.mode === 'PLAYING') {
+                toggleZoom();
+            } else if (e.code === 'Space' && STATE.mode === 'PLAYING' && !STATE.isDrawing) {
+                STATE.isDrawing = true;
+                STATE.drawPower = 0.08;
+                audio.playBowDraw();
+            }
+        });
+
+        window.addEventListener('keyup', (e) => {
+            keysPressed[e.code] = false;
+            if (e.code === 'Space' && STATE.mode === 'PLAYING' && STATE.isDrawing) {
+                fireArrow();
+            }
+        });
+
+        function toggleZoom() {
+            STATE.zoomLevel = STATE.zoomLevel === 1 ? 2 : 1;
+            STATE.targetFov = STATE.zoomLevel === 2 ? 30 : 55;
+            document.getElementById('hud-zoom-btn').textContent = `🔍 ${STATE.zoomLevel}x`;
+        }
+
+        // =====================================================================
+        // 15. UI BUTTON BINDINGS
+        // =====================================================================
+        document.getElementById('skip-intro-btn').addEventListener('click', () => {
+            audio.init();
+            finishIntroToMenu();
+        });
+
+        document.getElementById('start-game-btn').addEventListener('click', () => {
+            startNewBattle();
+        });
+
+        document.getElementById('how-to-play-btn').addEventListener('click', () => {
+            document.getElementById('how-to-play-modal').classList.remove('hidden');
+        });
+
+        document.getElementById('close-howto-btn').addEventListener('click', () => {
+            document.getElementById('how-to-play-modal').classList.add('hidden');
+        });
+
+        // Difficulty Buttons
+        document.querySelectorAll('.diff-btn').forEach((btn) => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.diff-btn').forEach(b => b.classList.remove('active-opt'));
+                btn.classList.add('active-opt');
+                STATE.difficulty = btn.getAttribute('data-diff');
+                const preset = DIFFICULTY_PRESETS[STATE.difficulty];
+                document.getElementById('diff-desc').textContent = preset.desc;
+                STATE.assistedAim = preset.assistDefault;
+                updateAssistButtons();
+            });
+        });
+
+        // Graphics Quality Buttons
+        document.querySelectorAll('.qual-btn').forEach((btn) => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.qual-btn').forEach(b => b.classList.remove('active-opt'));
+                btn.classList.add('active-opt');
+                STATE.quality = btn.getAttribute('data-qual');
+                const q = QUALITY_PRESETS[STATE.quality];
+                renderer.setPixelRatio(q.pixelRatio);
+                renderer.shadowMap.enabled = q.shadows;
+            });
+        });
+
+        function updateAssistButtons() {
+            const menuBtn = document.getElementById('toggle-assist-btn');
+            const hudBtn = document.getElementById('hud-assist-btn');
+            menuBtn.textContent = STATE.assistedAim ? 'ON' : 'OFF';
+            menuBtn.classList.toggle('active-opt', STATE.assistedAim);
+            hudBtn.classList.toggle('active-opt', STATE.assistedAim);
+        }
+
+        document.getElementById('toggle-assist-btn').addEventListener('click', () => {
+            STATE.assistedAim = !STATE.assistedAim;
+            updateAssistButtons();
+        });
+
+        document.getElementById('hud-assist-btn').addEventListener('click', () => {
+            STATE.assistedAim = !STATE.assistedAim;
+            updateAssistButtons();
+        });
+
+        function toggleAudioState() {
+            audio.init();
+            audio.setEnabled(!audio.enabled);
+            const menuSound = document.getElementById('menu-sound-btn');
+            const hudSound = document.getElementById('hud-sound-btn');
+            menuSound.textContent = audio.enabled ? 'SOUND: ON' : 'SOUND: OFF';
+            menuSound.classList.toggle('active-opt', audio.enabled);
+            hudSound.textContent = audio.enabled ? '🔊' : '🔇';
+        }
+
+        document.getElementById('menu-sound-btn').addEventListener('click', toggleAudioState);
+        document.getElementById('hud-sound-btn').addEventListener('click', toggleAudioState);
+        document.getElementById('hud-zoom-btn').addEventListener('click', toggleZoom);
+
+        document.getElementById('hud-pause-btn').addEventListener('click', () => {
+            if (STATE.mode === 'PLAYING') {
+                STATE.mode = 'PAUSED';
+                document.getElementById('pause-modal').classList.remove('hidden');
+            }
+        });
+
+        document.getElementById('resume-btn').addEventListener('click', () => {
+            STATE.mode = 'PLAYING';
+            document.getElementById('pause-modal').classList.add('hidden');
+        });
+
+        document.getElementById('pause-restart-btn').addEventListener('click', startNewBattle);
+        document.getElementById('def-retry-btn').addEventListener('click', startNewBattle);
+        document.getElementById('vic-replay-btn').addEventListener('click', startNewBattle);
+
+        function returnToMainMenu() {
+            STATE.mode = 'MENU';
+            document.getElementById('pause-modal').classList.add('hidden');
+            document.getElementById('victory-modal').classList.add('hidden');
+            document.getElementById('defeat-modal').classList.add('hidden');
+            document.getElementById('gameplay-hud').classList.add('hidden');
+            document.getElementById('markers-layer').innerHTML = '';
+            document.getElementById('main-menu').classList.remove('hidden');
+            document.getElementById('menu-best-score').textContent = STATE.bestScore.toLocaleString();
+            camera.position.copy(ARCHER_ORIGIN);
+            camera.lookAt(0, 22, RAVANA_Z);
+        }
+
+        document.getElementById('pause-menu-btn').addEventListener('click', returnToMainMenu);
+        document.getElementById('vic-menu-btn').addEventListener('click', returnToMainMenu);
+        document.getElementById('def-menu-btn').addEventListener('click', returnToMainMenu);
+
+        // Responsive Window Resize Handler
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        // =====================================================================
+        // 16. MAIN REAL-TIME RENDER & GAMEPLAY LOOP
+        // =====================================================================
+        const clock = new THREE.Clock();
+
+        function animate() {
+            requestAnimationFrame(animate);
+            const dt = Math.min(0.05, clock.getDelta());
+            const elapsed = clock.getElapsedTime();
+
+            // Subtle breathing / menacing sway on Ravana's active targets
+            kalashTargets.forEach((k, idx) => {
+                if (!k.destroyed) {
+                    k.aura.rotation.y += dt * 1.8;
+                    k.group.position.y = k.localPos.y + Math.sin(elapsed * 2.5 + idx) * 0.18;
+                }
+            });
+
+            if (STATE.mode !== 'GRAND_BURNING') {
+                headTargets.forEach((h, idx) => {
+                    h.group.position.y = h.baseY + Math.sin(elapsed * 2.0 + idx * 0.6) * 0.12;
+                });
+            }
+
+            if (coreTarget && coreTarget.vulnerable && !coreTarget.destroyed) {
+                coreTarget.gem.rotation.y += dt * 3.2;
+                coreTarget.gem.rotation.z += dt * 2.0;
+                const pulse = 1.0 + Math.sin(elapsed * 8.0) * 0.16;
+                coreTarget.gem.scale.setScalar(pulse);
+            }
+
+            // State-specific Updates
+            if (STATE.mode === 'INTRO') {
+                updateIntroCinematic(dt);
+            } else if (STATE.mode === 'MENU') {
+                // Subtle festive camera orbit in background of main menu
+                camera.position.x = Math.sin(elapsed * 0.25) * 6.0;
+                camera.position.y = ARCHER_ORIGIN.y + Math.cos(elapsed * 0.2) * 1.2;
+                camera.lookAt(0, 22, RAVANA_Z);
+                if (Math.random() < 1.2 * dt * QUALITY_PRESETS[STATE.quality].fireworkRate) {
+                    launchAerialFirework(
+                        new THREE.Vector3((Math.random() - 0.5) * 65, 5, RAVANA_Z - 12 - Math.random() * 20),
+                        34 + Math.random() * 18,
+                        false
+                    );
+                }
+            } else if (STATE.mode === 'PLAYING') {
+                // Fine WASD / Arrow Key Aiming
+                const keyAimSpeed = 0.55 * dt;
+                if (keysPressed['KeyA'] || keysPressed['ArrowLeft'])  STATE.yaw   = Math.min(0.46, STATE.yaw + keyAimSpeed);
+                if (keysPressed['KeyD'] || keysPressed['ArrowRight']) STATE.yaw   = Math.max(-0.46, STATE.yaw - keyAimSpeed);
+                if (keysPressed['KeyW'] || keysPressed['ArrowUp'])    STATE.pitch = Math.min(0.52, STATE.pitch + keyAimSpeed);
+                if (keysPressed['KeyS'] || keysPressed['ArrowDown'])  STATE.pitch = Math.max(-0.06, STATE.pitch - keyAimSpeed);
+
+                // Charge Draw Power while holding mouse/touch
+                if (STATE.isDrawing) {
+                    STATE.drawPower = Math.min(1.0, STATE.drawPower + dt * 0.95);
+                }
+
+                // Update Bowstring & Arrow Pullback Animation
+                const pullZ = -0.11 + STATE.drawPower * 0.52;
+                const sArr = stringGeo.attributes.position.array;
+                sArr[5] = pullZ; // Middle nock vertex Z
+                stringGeo.attributes.position.needsUpdate = true;
+                upperLimb.rotation.x = 0.16 + STATE.drawPower * 0.14;
+                lowerLimb.rotation.x = -0.16 - STATE.drawPower * 0.14;
+                nockedArrow.position.z = STATE.drawPower * 0.52;
+
+                // Update Circular Draw Power HUD Gauge
+                const circumference = 213.6;
+                const offset = circumference * (1 - STATE.drawPower);
+                const circleEl = document.getElementById('draw-power-circle');
+                circleEl.style.strokeDashoffset = String(offset);
+                const labelEl = document.getElementById('draw-power-label');
+                labelEl.style.opacity = STATE.isDrawing ? '1' : '0';
+                labelEl.textContent = `${Math.round(STATE.drawPower * 100)}%`;
+
+                // Camera Orientation & Action Follow-Cam
+                if (actionCamArrow && actionCamArrow.active) {
+                    bowRig.visible = false;
+                    const desiredCamPos = actionCamArrow.pos.clone().add(new THREE.Vector3(1.8, 1.2, 6.5));
+                    camera.position.lerp(desiredCamPos, dt * 8.0);
+                    camera.lookAt(actionCamArrow.pos);
+                } else {
+                    if (actionCamReturnTimer > 0) {
+                        actionCamReturnTimer -= dt;
+                        camera.position.lerp(ARCHER_ORIGIN, dt * 6.0);
+                    } else {
+                        camera.position.copy(ARCHER_ORIGIN);
+                        bowRig.visible = true;
+                    }
+                    camera.rotation.order = 'YXZ';
+                    camera.rotation.y = STATE.yaw;
+                    camera.rotation.x = STATE.pitch;
+                    camera.rotation.z = 0;
+                }
+
+                // Smooth FOV Zoom interpolation
+                camera.fov = THREE.MathUtils.lerp(camera.fov, STATE.targetFov, dt * 10.0);
+                camera.updateProjectionMatrix();
+
+                // Background occasional festive fireworks
+                if (Math.random() < 0.7 * dt * QUALITY_PRESETS[STATE.quality].fireworkRate) {
+                    launchAerialFirework(
+                        new THREE.Vector3((Math.random() - 0.5) * 80, 5, RAVANA_Z - 20),
+                        38 + Math.random() * 18,
+                        false
+                    );
+                }
+
+                updateTrajectoryGuide();
+                updateFlyingArrows(dt);
+                updateTargetScreenMarkers();
+            } else if (STATE.mode === 'GRAND_BURNING' || STATE.mode === 'VICTORY') {
+                updateGrandBurningSequence(dt);
+            }
+
+            updateParticlesAndFireworks(dt);
+            renderer.render(scene, camera);
+        }
+
+        window.onload = function () {
+            animate();
+        };
+    })();
+    </script>
+</body>
+</html>
